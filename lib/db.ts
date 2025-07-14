@@ -1,41 +1,30 @@
-// import mongoose from "mongoose";
-// import { buffer } from "stream/consumers";
+import mongoose from "mongoose";
 
-// const MONGODB_URI = process.env.MONGODB_URI!;
+type ConnectionObject = {
+  isConnected?: number;
+};
 
-// if (!MONGODB_URI) {
-//   throw new Error(
-//     "Please define the MONGODB_URI environment variable inside .env.local"
-//   );
-// }
+const connection: ConnectionObject = {};
 
-// let cached = global.mongoose;
+export async function dbConnect(): Promise<void> {
+  if (connection.isConnected) {
+    console.log("Using existing connection");
+    return;
+  }
+  console.log("Establishing new connection");
+  try {
+    mongoose.connect(process.env.MONGO_URI!);
+    const connection = mongoose.connection;
 
-// if (!cached) {
-//   cached = global.mongoose = { connection: null, promise: null };
-// }
-
-// export async function connectToDatabase() {
-//   if (cached.connection) {
-//     return cached.connection;
-//   }
-//   if (!cached.promise) {
-//     const opts = {
-//       bufferCommands: false,
-//       maxPoolSize: 10,
-//     };
-
-//     cached.promise = mongoose
-//       .connect(MONGODB_URI, opts)
-//       .then(() => mongoose.connection);
-//   }
-
-//   try {
-//     cached.connection = await cached.promise;
-//   } catch (error) {
-//     cached.promise = null;
-//     throw new Error(`Failed to connect to MongoDB: ${error}`);
-//   }
-
-//   return cached.connection;
-// }
+    connection.on("connected", () => {
+      console.log("MongoDB connected successfully");
+    });
+    connection.on("error", (err) => {
+      console.log("MongoDB connection error:", err);
+      process.exit();
+    });
+  } catch (error) {
+    console.error("Error connecting to MongoDB:", error);
+    throw new Error("Failed to connect to the database");
+  }
+}
