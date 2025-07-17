@@ -23,6 +23,8 @@ export async function POST(request: NextRequest) {
       isVerified = false,
       verifyToken,
       verifyTokenExpiry = new Date(),
+      rememberMeToken,
+      rememberMeExpiry = new Date(),
     } = body;
 
     const existingStudent = await studentModel.findOne({ email });
@@ -47,10 +49,10 @@ export async function POST(request: NextRequest) {
       phone,
       isVerified,
       verifyToken,
-      verifyTokenExpiry: new Date(verifyTokenExpiry), // <-- ensure it's Date
+      verifyTokenExpiry: new Date(verifyTokenExpiry),
+      rememberMeToken,
+      rememberMeExpiry: new Date(rememberMeExpiry),
     });
-
-    console.log("Saving student with values:", newStudent.toObject());
 
     const savedUser = await newStudent.save();
 

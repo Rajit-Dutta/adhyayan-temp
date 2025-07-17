@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const reqBody = await request.json();
     const { email, password } = reqBody;
 
-    const user = await studentModel.findOne({ email, password });
+    const user = await studentModel.findOne({ email });
     if (!user) {
       return NextResponse.json(
         { error: "Invalid email or password" },
@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
       );
     }
     const validPassword = await bcrypt.compare(password, user.password);
+ 
     if (!validPassword) {
       return NextResponse.json(
         { message: "Sign in unsuccessful" },

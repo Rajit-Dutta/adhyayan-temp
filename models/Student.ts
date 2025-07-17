@@ -14,8 +14,8 @@ const studentSchema = new Schema(
     age: { type: Number, required: true },
     isVerified: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
-    standard: { type: Number, required: true },
-    marks: { type: Number, required: true },
+    standard: { type: String, required: true },
+    marks: { type: Number },
     phone: {
       type: String,
       required: true,
@@ -27,6 +27,8 @@ const studentSchema = new Schema(
     forgotPasswordExpiry: { type: Date },
     verifyToken: { type: String },
     verifyTokenExpiry: { type: Date },
+    rememberMeToken: { type: String },
+    rememberMeExpiry: { type: Date },
   },
   {
     timestamps: true,

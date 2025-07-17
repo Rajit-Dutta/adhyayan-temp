@@ -23,8 +23,8 @@ export async function POST(request: NextRequest) {
       );
     }
     user.isVerified = true;
-    // user.verifyToken = undefined;
-    // user.verifyTokenExpiry = undefined;
+    user.verifyToken = undefined;
+    user.verifyTokenExpiry = undefined;
     await user.save();
     return NextResponse.json(
       { message: "Email verified successfully" },
