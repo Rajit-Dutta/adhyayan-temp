@@ -8,6 +8,21 @@ dbConnect();
 
 export async function POST(request: NextRequest) {
   try {
+    //auto-login
+    const rememeberToken = request.cookies.get("rememberMeToken")?.value;
+
+    if (rememeberToken) {
+      const userFound = await studentModel.findOne({
+        rememberMeToken: rememeberToken,
+      });
+      if (!userFound) {
+        const response = NextResponse.next();
+        response.cookies.delete("rememberMeToken");
+        return response;
+      }
+    }
+
+    //self-login
     const reqBody = await request.json();
     const { email, password } = reqBody;
 
@@ -19,7 +34,7 @@ export async function POST(request: NextRequest) {
       );
     }
     const validPassword = await bcrypt.compare(password, user.password);
- 
+
     if (!validPassword) {
       return NextResponse.json(
         { message: "Sign in unsuccessful" },

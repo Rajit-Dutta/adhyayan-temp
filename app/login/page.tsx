@@ -19,7 +19,6 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { FormField } from "@/components/form-field";
 import { useFormValidation } from "@/hooks/use-form-validation";
 import { commonRules } from "@/lib/validation";
-import { rememberMeHandler } from "@/helpers/rememberMeHandler";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -44,13 +43,17 @@ export default function LoginPage() {
           `${process.env.NEXT_PUBLIC_DOMAIN!}/signIn`,
           formData
         );
+
         toast.promise(signInPromise, {
           loading: "Loading",
           success: "Log in successful!✅",
           error: "Log in unsuccessful! ❌.",
         });
         await signInPromise;
-        await axios.post(`${process.env.NEXT_PUBLIC_DOMAIN!}/api/${formData._id}/rememberMe`,)
+        await axios.post(`${process.env.NEXT_PUBLIC_DOMAIN!}/rememberMe`,{
+          email: formData.email,
+          isRemembered: isRemembered,
+        })
       } catch (error) {
         console.error("Signup error:", error);
       }
