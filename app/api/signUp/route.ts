@@ -3,13 +3,20 @@ import studentModel from "@/models/Student";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { sendEmail } from "@/helpers/mailer";
+import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
 
 dbConnect();
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();  // Ensure connection is awaited
+    await dbConnect(); // Ensure connection is awaited
+    const cookieStore = await cookies();
+    const allCookies = cookieStore.getAll();
 
+    for (const cookie of allCookies) {
+      cookieStore.delete(cookie.name);
+    }
     const body = await request.json();
     const {
       firstName,
@@ -66,14 +73,28 @@ export async function POST(request: NextRequest) {
       console.error("Email sending failed:", emailErr);
     }
 
-    return NextResponse.json(
+    const tokenData = {
+      name: savedUser.name,
+      email: savedUser.email,
+      userType: "student",
+    };
+    const token = jwt.sign(tokenData, process.env.JWT_SECRET!, {
+      expiresIn: "1d",
+    });
+
+    const response = NextResponse.json(
       {
-        message: "Student registered successfully. Verification email sent.",
+        message: "Sign in successful",
         success: true,
-        student: savedUser,
       },
-      { status: 201 }
+      {
+        status: 200,
+      }
     );
+    response.cookies.set("token", token, {
+      httpOnly: true,
+    });
+    return response;
   } catch (error: any) {
     console.error("Error in POST request:", error.message || error);
     return NextResponse.json(
@@ -82,4 +103,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

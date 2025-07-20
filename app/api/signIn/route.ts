@@ -2,6 +2,7 @@ import { dbConnect } from "@/lib/db";
 import studentModel from "@/models/Student";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 dbConnect();
@@ -41,6 +42,13 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    const cookieStore = await cookies();
+    const allCookies = cookieStore.getAll();
+
+    for (const cookie of allCookies) {
+      cookieStore.delete(cookie.name);
+    }
+
     const tokenData = {
       id: user._id,
       name: user.name,
