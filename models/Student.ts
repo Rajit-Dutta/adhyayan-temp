@@ -6,7 +6,7 @@ const studentSchema = new Schema(
     lastName: { type: String, required: true },
     email: {
       type: String,
-      required: true, 
+      required: true,
       unique: true,
       match: [/.+\@.+\..+/, "please use a valid email address"],
     },
@@ -23,6 +23,7 @@ const studentSchema = new Schema(
     },
     remarks: { type: String },
     subjects: [{ type: Schema.Types.ObjectId, ref: "Course" }],
+    batch: { type: Schema.Types.ObjectId, ref: "Batch" },
     forgotPasswordToken: { type: String },
     forgotPasswordExpiry: { type: Date },
     verifyToken: { type: String },
