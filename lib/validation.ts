@@ -22,12 +22,12 @@ export const validateField = (
   const errors: string[] = [];
 
   for (const rule of rules) {
-    if (rule.required && (!value || value.trim() === "")) {
+    if (rule.required && (!value || value.trim() === "")  ) {
       errors.push(rule.message);
       continue;
     }
 
-    if (value && rule.minLength && value.length < rule.minLength) {
+    if (value && rule.minLength && value.length < rule.minLength) {1
       errors.push(rule.message);
     }
 
@@ -67,7 +67,7 @@ export const validateForm = (
 export const patterns = {
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   phone: /^[+]?[1-9][\d]{0,15}$/,
-  password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&\-])[a-zA-Z\d@$!%*?&\-]{8,}$/,
+  password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
   name: /^[a-zA-Z\s]{2,}$/,
 };
 
@@ -104,20 +104,28 @@ export const commonRules = {
   phone: [
     { pattern: patterns.phone, message: "Please enter a valid phone number" },
   ],
-  standard: [
-    { required: true, message: "Standard is required" },
-    { minLength: 1, message: "Atleast 1 character is required" },
+  parentName: [
+    { required: true, message: "Parent/Guardian name is required" },
+    { minLength: 2, message: "Parent name must be at least 2 characters" },
     {
       pattern: patterns.name,
-      message: "Standard can only contain numbers and letters",
+      message: "Parent name can only contain letters and spaces",
     },
   ],
-  age: [
-    { required: true, message: "Age is required" },
-    { minLength: 1, message: "Age should be more then 1" },
+  parentPhone: [
+    { required: true, message: "Parent phone number is required" },
     {
-      pattern: patterns.name,
-      message: "Age can only contain numbers",
+      pattern: patterns.phone,
+      message: "Please enter a valid parent phone number",
     },
+  ],
+  address: [
+    { required: true, message: "Address is required" },
+    { minLength: 10, message: "Address must be at least 10 characters" },
+  ],
+  DOB: [{ required: true, message: "Date of birth is required" }],
+  bloodGroup: [{ required: true, message: "Blood group is required" }],
+  subjects: [
+    { required: true, message: "At least one subject must be selected" },
   ],
 };

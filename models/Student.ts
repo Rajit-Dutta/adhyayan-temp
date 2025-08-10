@@ -4,6 +4,12 @@ const studentSchema = new Schema(
   {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
+    parentName: { type: String, required: true },
+    parentPhone: {
+      type: String,
+      required: true,
+      match: [/^\d{10}$/, "please use a valid phone number"],
+    },
     email: {
       type: String,
       required: true,
@@ -22,8 +28,11 @@ const studentSchema = new Schema(
       match: [/^\d{10}$/, "please use a valid phone number"],
     },
     remarks: { type: String },
-    subjects: [{ type: Schema.Types.ObjectId, ref: "Course" }],
+    subjects: [{ type: String, required: true }],
     batch: { type: Schema.Types.ObjectId, ref: "Batch" },
+    address: { type: String, required: true },
+    DOB: { type: Date, required: true },
+    bloodGroup: { type: String, required: true },
     forgotPasswordToken: { type: String },
     forgotPasswordExpiry: { type: Date },
     verifyToken: { type: String },
