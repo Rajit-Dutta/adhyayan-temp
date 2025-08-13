@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
       {
         message: "Sign in successful",
         success: true,
+        student: user,
       },
       {
         status: 200,

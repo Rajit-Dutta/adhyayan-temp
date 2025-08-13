@@ -19,10 +19,12 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { FormField } from "@/components/form-field";
 import { useFormValidation } from "@/hooks/use-form-validation";
 import { commonRules } from "@/lib/validation";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isRemembered, setIsRemembered] = useState(false);
+  const router = useRouter();
 
   const {
     formData,
@@ -49,11 +51,13 @@ export default function LoginPage() {
           success: "Log in successful!✅",
           error: "Log in unsuccessful! ❌.",
         });
-        await signInPromise;
+        const response = await signInPromise;
         await axios.post(`${process.env.NEXT_PUBLIC_DOMAIN!}/rememberMe`,{
           email: formData.email,
           isRemembered: isRemembered,
         })
+        
+        router.push(`/${response.data.student._id}/dashboard`);
       } catch (error) {
         console.error("Signup error:", error);
       }

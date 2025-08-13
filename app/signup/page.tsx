@@ -31,6 +31,7 @@ import { FormField } from "@/components/form-field";
 import { PasswordStrength } from "@/components/password-strength";
 import { useFormValidation } from "@/hooks/use-form-validation";
 import { commonRules } from "@/lib/validation";
+import { useRouter } from "next/navigation";
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -48,6 +49,7 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [isSuccess, setIsSuccess] = useState(false);
+  const router = useRouter();
 
   const {
     formData,
@@ -93,7 +95,8 @@ export default function SignupPage() {
           error: "Sign up unsuccessful! ❌.",
         });
         const response = await signUpPromise;
-        console.log(response.data);
+        console.log(response);
+        router.push(`/${response.data.student._id}/dashboard`);
       } catch (error) {
         console.error("Signup error:", error);
       }
@@ -106,7 +109,7 @@ export default function SignupPage() {
       : [...selectedSubjects, subject];
 
     setSelectedSubjects(newSubjects);
-    updateField("subjects", newSubjects.length > 0 ? "selected" : "");
+    updateField("subjects", newSubjects.toString());
   };
 
   if (isSuccess) {
@@ -247,9 +250,7 @@ export default function SignupPage() {
                             id="DOB"
                             type="date"
                             value={formData.DOB || ""}
-                            onChange={(e) =>
-                              updateField("DOB", e.target.value)
-                            }
+                            onChange={(e) => updateField("DOB", e.target.value)}
                             onBlur={() => touchField("DOB")}
                             className={`neo-brutalism-input p-[5px] w-full ${
                               errors.DOB?.length && touched.dob
