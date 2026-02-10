@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { error: "Invalid email or password" },
-        { status: 401 }
+        { status: 401 },
       );
     }
     const validPassword = await bcrypt.compare(password, user.password);
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     if (!validPassword) {
       return NextResponse.json(
         { message: "Sign in unsuccessful" },
-        { status: 400 }
+        { status: 400 },
       );
     }
     const cookieStore = await cookies();
@@ -51,9 +51,12 @@ export async function POST(request: NextRequest) {
 
     const tokenData = {
       id: user._id,
-      name: user.name,
+      name: user.firstName + " " + user.lastName,
       email: user.email,
     };
+
+    console.log(tokenData);
+
     const token = jwt.sign(tokenData, process.env.JWT_SECRET!, {
       expiresIn: "1d",
     });
@@ -66,7 +69,7 @@ export async function POST(request: NextRequest) {
       },
       {
         status: 200,
-      }
+      },
     );
     response.cookies.set("token", token, {
       httpOnly: true,
@@ -76,7 +79,7 @@ export async function POST(request: NextRequest) {
     console.error("Error in signIn route:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

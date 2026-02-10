@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     if (existingStudent) {
       return NextResponse.json(
         { error: "Student with this email already exists" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     const tokenData = {
-      name: savedUser.name,
+      name: savedUser.firstName + " " + savedUser.lastName,
       email: savedUser.email,
       userType: "student",
     };
@@ -96,13 +96,13 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json(
       {
-        message: "Sign in successful",
+        message: "Sign up successful",
         success: true,
         student: savedUser,
       },
       {
         status: 200,
-      }
+      },
     );
     response.cookies.set("token", token, {
       httpOnly: true,
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
     console.error("Error in POST request:", error.message || error);
     return NextResponse.json(
       { error: error.message || "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
