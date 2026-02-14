@@ -1,10 +1,10 @@
-import { Connection } from "mongoose"
+import { Connection } from "mongoose";
 
 declare global {
-    var global:{
-        connection: Connection | null,
-        promise: Promise<Connection> | null,
-    }
+  var connection: Connection | null;
+  var promise: Promise<Connection> | null;
 }
 
-export {}
+declare module "*.css";
+
+export {};

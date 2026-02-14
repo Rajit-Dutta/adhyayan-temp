@@ -1,6 +1,6 @@
 import axios from "axios";
 import { atom } from "jotai";
-import { unwrap } from "jotai/utils";
+import { loadable } from "jotai/utils";
 
 const studentCookieData = atom(async () => {
   try {
@@ -10,8 +10,6 @@ const studentCookieData = atom(async () => {
         withCredentials: true,
       },
     );
-
-    console.log("User data:", userRes.data);
 
     const { name } = userRes.data.jwtDecoded;
 
@@ -23,4 +21,4 @@ const studentCookieData = atom(async () => {
     console.error("Error during admin dashboard data fetch:", error);
   }
 });
-export const loadableStudentCookieData = unwrap(studentCookieData);
+export const loadableStudentCookieData = loadable(studentCookieData);

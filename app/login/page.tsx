@@ -43,7 +43,7 @@ export default function LoginPage() {
       try {
         const signInPromise = axios.post(
           `${process.env.NEXT_PUBLIC_DOMAIN!}/signIn`,
-          formData
+          formData,
         );
 
         toast.promise(signInPromise, {
@@ -52,11 +52,11 @@ export default function LoginPage() {
           error: "Log in unsuccessful! ❌.",
         });
         const response = await signInPromise;
-        await axios.post(`${process.env.NEXT_PUBLIC_DOMAIN!}/rememberMe`,{
+        await axios.post(`${process.env.NEXT_PUBLIC_DOMAIN!}/rememberMe`, {
           email: formData.email,
           isRemembered: isRemembered,
-        })
-        
+        });
+
         router.push(`/${response.data.student._id}/dashboard`);
       } catch (error) {
         console.error("Signup error:", error);
@@ -132,12 +132,13 @@ export default function LoginPage() {
                     placeholder="Enter your password"
                     value={formData.password || ""}
                     onChange={(value) => updateField("password", value)}
+                    className="w-full"
                     onBlur={() => touchField("password")}
                     errors={errors.password}
                     touched={touched.password}
                     required
                   >
-                    <div className="relative">
+                    <div className="w-full">
                       <input
                         id="password"
                         type={showPassword ? "text" : "password"}
@@ -151,26 +152,28 @@ export default function LoginPage() {
                           errors.password?.length && touched.password
                             ? "border-destructive focus:border-destructive focus:shadow-[2px_2px_0px_0px_rgba(239,68,68,1)]"
                             : touched.password &&
-                              !errors.password?.length &&
-                              formData.password
-                            ? "border-green-500 focus:border-green-500 focus:shadow-[2px_2px_0px_0px_rgba(34,197,94,1)]"
-                            : ""
+                                !errors.password?.length &&
+                                formData.password
+                              ? "border-green-500 focus:border-green-500 focus:shadow-[2px_2px_0px_0px_rgba(34,197,94,1)]"
+                              : ""
                         }`}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                        <span className="sr-only">
+                          Toggle password visibility
+                        </span>
+                      </button>
                     </div>
                   </FormField>
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                    <span className="sr-only">Toggle password visibility</span>
-                  </button>
                 </div>
 
                 <div className="flex items-center justify-between">

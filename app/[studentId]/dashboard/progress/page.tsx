@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   ArrowDown,
   ArrowUp,
@@ -19,6 +19,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AreaChart, BarChart, DonutChart } from "@/components/ui/chart"
+import { LoadingWrapper } from "@/components/loading-wrapper"
+import {
+  DashboardStatsSkeleton,
+  DashboardChartSkeleton,
+  ProgressCardSkeleton,
+} from "@/components/skeletons/dashboard-skeleton"
 
 const monthlyData = [
   { month: "Sep", Mathematics: 62, Physics: 68, English: 55, History: 70, overall: 64 },
@@ -106,7 +112,15 @@ const goals = [
 ]
 
 export default function ProgressPage() {
+  const [isLoading, setIsLoading] = useState(true)
   const [timePeriod, setTimePeriod] = useState("6months")
+
+  // Simulate loading
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1500)
+    return () => clearTimeout(timer)
+  }, [])
+
   const overallScore = Math.round(subjectDetails.reduce((a, b) => a + b.score, 0) / subjectDetails.length)
   const overallChange = Math.round(subjectDetails.reduce((a, b) => a + b.change, 0) / subjectDetails.length)
 
@@ -135,73 +149,87 @@ export default function ProgressPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Card className="neo-brutalism-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 border-2 border-foreground">
-                <TrendingUp className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Overall</p>
-                <div className="flex items-center gap-1">
-                  <p className="text-lg font-black">{overallScore}%</p>
-                  <span className="flex items-center text-xs font-bold text-green-600">
-                    <ArrowUp className="h-3 w-3" />{overallChange}
-                  </span>
+      <LoadingWrapper
+        isLoading={isLoading}
+        skeleton={<DashboardStatsSkeleton />}
+      >
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <Card className="neo-brutalism-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 border-2 border-foreground">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Overall</p>
+                  <div className="flex items-center gap-1">
+                    <p className="text-lg font-black">{overallScore}%</p>
+                    <span className="flex items-center text-xs font-bold text-green-600">
+                      <ArrowUp className="h-3 w-3" />{overallChange}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="neo-brutalism-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-yellow-500/10 border-2 border-foreground">
-                <Award className="h-4 w-4 text-yellow-600" />
+            </CardContent>
+          </Card>
+          <Card className="neo-brutalism-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-yellow-500/10 border-2 border-foreground">
+                  <Award className="h-4 w-4 text-yellow-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Class Rank</p>
+                  <p className="text-lg font-black">#5 <span className="text-xs font-normal text-muted-foreground">/ 156</span></p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Class Rank</p>
-                <p className="text-lg font-black">#5 <span className="text-xs font-normal text-muted-foreground">/ 156</span></p>
+            </CardContent>
+          </Card>
+          <Card className="neo-brutalism-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-500/10 border-2 border-foreground">
+                  <BookOpen className="h-4 w-4 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Assignments</p>
+                  <p className="text-lg font-black">39/46</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="neo-brutalism-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-500/10 border-2 border-foreground">
-                <BookOpen className="h-4 w-4 text-blue-600" />
+            </CardContent>
+          </Card>
+          <Card className="neo-brutalism-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-green-500/10 border-2 border-foreground">
+                  <Calendar className="h-4 w-4 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Attendance</p>
+                  <p className="text-lg font-black">93%</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Assignments</p>
-                <p className="text-lg font-black">39/46</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="neo-brutalism-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-green-500/10 border-2 border-foreground">
-                <Calendar className="h-4 w-4 text-green-600" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Attendance</p>
-                <p className="text-lg font-black">93%</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      </LoadingWrapper>
 
-      <Tabs defaultValue="overview" className="neo-brutalism-tabs">
-        <TabsList className="w-full sm:w-auto neo-brutalism-tabslist">
-          <TabsTrigger value="overview" className="font-bold">Overview</TabsTrigger>
-          <TabsTrigger value="subjects" className="font-bold">Subjects</TabsTrigger>
-          <TabsTrigger value="tests" className="font-bold">Test Scores</TabsTrigger>
-          <TabsTrigger value="goals" className="font-bold">Goals</TabsTrigger>
-        </TabsList>
+      <LoadingWrapper
+        isLoading={isLoading}
+        skeleton={
+          <div className="space-y-4 pt-4">
+            <DashboardChartSkeleton />
+            <ProgressCardSkeleton />
+          </div>
+        }
+      >
+        <Tabs defaultValue="overview" className="neo-brutalism-tabs">
+          <TabsList className="w-full sm:w-auto neo-brutalism-tabslist">
+            <TabsTrigger value="overview" className="font-bold">Overview</TabsTrigger>
+            <TabsTrigger value="subjects" className="font-bold">Subjects</TabsTrigger>
+            <TabsTrigger value="tests" className="font-bold">Test Scores</TabsTrigger>
+            <TabsTrigger value="goals" className="font-bold">Goals</TabsTrigger>
+          </TabsList>
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-4 pt-4">
@@ -456,6 +484,7 @@ export default function ProgressPage() {
           </div>
         </TabsContent>
       </Tabs>
+      </LoadingWrapper>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   AlertCircle,
   Calendar,
@@ -13,6 +13,7 @@ import {
   Search,
   Upload,
   X,
+  File,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -21,6 +22,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { LoadingWrapper } from "@/components/loading-wrapper"
+import {
+  DashboardStatsSkeleton,
+  AssignmentCardSkeleton,
+} from "@/components/skeletons/dashboard-skeleton"
 
 const pendingAssignments = [
   {
@@ -139,10 +145,19 @@ const gradedAssignments = [
 ]
 
 export default function AssignmentsPage() {
+  const [isLoading, setIsLoading] = useState(true)
   const [showUploadModal, setShowUploadModal] = useState(false)
+  const [viewModal, setViewModal] = useState<number | null>(null)
   const [selectedAssignment, setSelectedAssignment] = useState<string>("")
   const [filterSubject, setFilterSubject] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+
+  // Simulate loading
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1500)
+    return () => clearTimeout(timer)
+  }, [])
 
   const subjects = ["All", "Mathematics", "Physics", "English", "History"]
 
@@ -179,69 +194,84 @@ export default function AssignmentsPage() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Card className="neo-brutalism-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-red-500/10 border-2 border-foreground">
-                <AlertCircle className="h-4 w-4 text-red-600" />
+      <LoadingWrapper
+        isLoading={isLoading}
+        skeleton={<DashboardStatsSkeleton />}
+      >
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <Card className="neo-brutalism-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-red-500/10 border-2 border-foreground">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Pending</p>
+                  <p className="text-lg font-black">{pendingAssignments.length}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Pending</p>
-                <p className="text-lg font-black">{pendingAssignments.length}</p>
+            </CardContent>
+          </Card>
+          <Card className="neo-brutalism-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-500/10 border-2 border-foreground">
+                  <Clock className="h-4 w-4 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Under Review</p>
+                  <p className="text-lg font-black">{submittedAssignments.length}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="neo-brutalism-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-500/10 border-2 border-foreground">
-                <Clock className="h-4 w-4 text-blue-600" />
+            </CardContent>
+          </Card>
+          <Card className="neo-brutalism-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-green-500/10 border-2 border-foreground">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Graded</p>
+                  <p className="text-lg font-black">{gradedAssignments.length}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Under Review</p>
-                <p className="text-lg font-black">{submittedAssignments.length}</p>
+            </CardContent>
+          </Card>
+          <Card className="neo-brutalism-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 border-2 border-foreground">
+                  <FileText className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Avg. Score</p>
+                  <p className="text-lg font-black">
+                    {Math.round(gradedAssignments.reduce((a, b) => a + b.percentage, 0) / gradedAssignments.length)}%
+                  </p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="neo-brutalism-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-green-500/10 border-2 border-foreground">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Graded</p>
-                <p className="text-lg font-black">{gradedAssignments.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="neo-brutalism-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 border-2 border-foreground">
-                <FileText className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Avg. Score</p>
-                <p className="text-lg font-black">
-                  {Math.round(gradedAssignments.reduce((a, b) => a + b.percentage, 0) / gradedAssignments.length)}%
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      </LoadingWrapper>
 
-      <Tabs defaultValue="pending" className="neo-brutalism-tabs">
-        <TabsList className="w-full sm:w-auto neo-brutalism-tabslist">
-          <TabsTrigger value="pending" className="font-bold">Pending ({pendingAssignments.length})</TabsTrigger>
-          <TabsTrigger value="submitted" className="font-bold">Submitted ({submittedAssignments.length})</TabsTrigger>
-          <TabsTrigger value="graded" className="font-bold">Graded ({gradedAssignments.length})</TabsTrigger>
-        </TabsList>
+      <LoadingWrapper
+        isLoading={isLoading}
+        skeleton={
+          <div className="space-y-4 pt-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <AssignmentCardSkeleton key={i} />
+            ))}
+          </div>
+        }
+      >
+        <Tabs defaultValue="pending" className="neo-brutalism-tabs">
+          <TabsList className="w-full sm:w-auto neo-brutalism-tabslist">
+            <TabsTrigger value="pending" className="font-bold">Pending ({pendingAssignments.length})</TabsTrigger>
+            <TabsTrigger value="submitted" className="font-bold">Submitted ({submittedAssignments.length})</TabsTrigger>
+            <TabsTrigger value="graded" className="font-bold">Graded ({gradedAssignments.length})</TabsTrigger>
+          </TabsList>
 
         {/* Pending Tab */}
         <TabsContent value="pending" className="space-y-4 pt-4">
@@ -321,7 +351,12 @@ export default function AssignmentsPage() {
                       <span>{a.fileName}</span>
                     </div>
                   </div>
-                  <Button size="sm" variant="outline" className="neo-brutalism-button-outline-sm text-xs h-8 bg-transparent">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="neo-brutalism-button-outline-sm text-xs h-8 bg-transparent"
+                    onClick={() => setViewModal(a.id)}
+                  >
                     View Submission
                   </Button>
                 </div>
@@ -380,11 +415,19 @@ export default function AssignmentsPage() {
                       <p className="text-xs text-muted-foreground">{a.feedback}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 sm:flex-col sm:items-end">
+                  <div className="flex flex-col items-end gap-3">
                     <div className="text-center">
                       <p className="text-3xl font-black text-primary">{a.obtainedMarks}</p>
                       <p className="text-xs text-muted-foreground">out of {a.totalMarks}</p>
                     </div>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="neo-brutalism-button-outline-sm text-xs h-8 bg-transparent"
+                      onClick={() => setViewModal(a.id)}
+                    >
+                      <Eye className="h-3 w-3" /> View
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -446,6 +489,117 @@ export default function AssignmentsPage() {
           </Card>
         </div>
       )}
+
+      {/* View Assignment Modal */}
+      {viewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <Card className="neo-brutalism-card w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b-2 border-foreground p-4">
+              <h2 className="text-lg font-black">Assignment Details</h2>
+              <button 
+                onClick={() => setViewModal(null)}
+                className="rounded-md p-1 hover:bg-muted"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <CardContent className="p-4 space-y-4">
+              {[...gradedAssignments, ...submittedAssignments]
+                .filter((a) => a.id === viewModal)
+                .map((assignment) => (
+                  <div key={assignment.id} className="space-y-4">
+                    {/* Header */}
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-black">{assignment.title}</h3>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        <div className="rounded-md border-2 border-foreground p-2">
+                          <p className="text-xs text-muted-foreground">Subject</p>
+                          <p className="text-sm font-bold">{assignment.subject}</p>
+                        </div>
+                        <div className="rounded-md border-2 border-foreground p-2">
+                          <p className="text-xs text-muted-foreground">Teacher</p>
+                          <p className="text-sm font-bold">{assignment.teacher}</p>
+                        </div>
+                        <div className="rounded-md border-2 border-foreground p-2">
+                          <p className="text-xs text-muted-foreground">Total Marks</p>
+                          <p className="text-sm font-bold">{assignment.totalMarks}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Grade Info (if graded) */}
+                    {'percentage' in assignment && (
+                      <div className="rounded-md border-2 border-foreground bg-green-500/10 p-3 space-y-2">
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="text-center">
+                            <p className="text-2xl font-black text-primary">{assignment.obtainedMarks}</p>
+                            <p className="text-xs text-muted-foreground">Obtained</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-2xl font-black text-green-600">{assignment.percentage}%</p>
+                            <p className="text-xs text-muted-foreground">Percentage</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-2xl font-black text-blue-600">{assignment.grade}</p>
+                            <p className="text-xs text-muted-foreground">Grade</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Feedback */}
+                    {'feedback' in assignment && (
+                      <div className="rounded-md border-2 border-foreground bg-muted/50 p-3">
+                        <p className="text-xs font-bold mb-2">Teacher Feedback:</p>
+                        <p className="text-sm">{assignment.feedback}</p>
+                      </div>
+                    )}
+
+                    {/* Submitted Date or Due Date */}
+                    <div className="rounded-md border-2 border-foreground p-3 bg-primary/10">
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {'submittedDate' in assignment ? 'Submitted On' : 'Due Date'}
+                      </p>
+                      <p className="font-bold">
+                        {('submittedDate' in assignment ? new Date(assignment.submittedDate) : new Date(assignment?.dueDate)).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </p>
+                    </div>
+
+                    {/* File Section */}
+                    {'fileName' in assignment && (
+                      <div className="rounded-md border-2 border-foreground p-3">
+                        <p className="text-xs font-bold mb-2">Submitted File:</p>
+                        <div className="flex items-center gap-3 rounded-md border-2 border-foreground p-2 bg-muted/30">
+                          <File className="h-5 w-5 text-blue-600" />
+                          <div className="flex-1">
+                            <p className="text-sm font-bold">{assignment.fileName}</p>
+                          </div>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
+                            <Download className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Close Button */}
+                    <Button 
+                      variant="outline" 
+                      className="w-full neo-brutalism-button-outline"
+                      onClick={() => setViewModal(null)}
+                    >
+                      Close
+                    </Button>
+                  </div>
+                ))}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      </LoadingWrapper>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import {
   CheckCircle2,
@@ -21,6 +21,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { LoadingWrapper } from "@/components/loading-wrapper"
+import {
+  DashboardStatsSkeleton,
+  DashboardFeedbackSkeleton,
+} from "@/components/skeletons/dashboard-skeleton"
 
 type FeedbackItem = {
   id: number
@@ -129,11 +134,18 @@ const typeConfig = {
 }
 
 export default function FeedbackPage() {
+  const [isLoading, setIsLoading] = useState(true)
   const [filterSubject, setFilterSubject] = useState("All")
   const [filterType, setFilterType] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
   const [expandedFeedback, setExpandedFeedback] = useState<number | null>(null)
   const [replyText, setReplyText] = useState("")
+
+  // Simulate loading
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1500)
+    return () => clearTimeout(timer)
+  }, [])
 
   const subjects = ["All", "Mathematics", "Physics", "English", "History"]
   const types = ["All", "praise", "improvement", "action", "general"]
@@ -176,67 +188,82 @@ export default function FeedbackPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Card className="neo-brutalism-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 border-2 border-foreground">
-                <MessageSquare className="h-4 w-4 text-primary" />
+      <LoadingWrapper
+        isLoading={isLoading}
+        skeleton={<DashboardStatsSkeleton />}
+      >
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <Card className="neo-brutalism-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 border-2 border-foreground">
+                  <MessageSquare className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Total Feedback</p>
+                  <p className="text-lg font-black">{feedbackData.length}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Total Feedback</p>
-                <p className="text-lg font-black">{feedbackData.length}</p>
+            </CardContent>
+          </Card>
+          <Card className="neo-brutalism-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-500/10 border-2 border-foreground">
+                  <Clock className="h-4 w-4 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Unread</p>
+                  <p className="text-lg font-black">{unreadCount}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="neo-brutalism-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-500/10 border-2 border-foreground">
-                <Clock className="h-4 w-4 text-blue-600" />
+            </CardContent>
+          </Card>
+          <Card className="neo-brutalism-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-yellow-500/10 border-2 border-foreground">
+                  <Lightbulb className="h-4 w-4 text-yellow-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Action Items</p>
+                  <p className="text-lg font-black">{totalActionItems}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Unread</p>
-                <p className="text-lg font-black">{unreadCount}</p>
+            </CardContent>
+          </Card>
+          <Card className="neo-brutalism-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-green-500/10 border-2 border-foreground">
+                  <Star className="h-4 w-4 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Avg. Grade</p>
+                  <p className="text-lg font-black">{avgGrade}%</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="neo-brutalism-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-yellow-500/10 border-2 border-foreground">
-                <Lightbulb className="h-4 w-4 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Action Items</p>
-                <p className="text-lg font-black">{totalActionItems}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="neo-brutalism-card">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-green-500/10 border-2 border-foreground">
-                <Star className="h-4 w-4 text-green-600" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Avg. Grade</p>
-                <p className="text-lg font-black">{avgGrade}%</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      </LoadingWrapper>
 
-      <Tabs defaultValue="all" className="neo-brutalism-tabs">
-        <TabsList className="w-full sm:w-auto neo-brutalism-tabslist">
-          <TabsTrigger value="all" className="font-bold">All ({feedbackData.length})</TabsTrigger>
-          <TabsTrigger value="unread" className="font-bold">Unread ({unreadCount})</TabsTrigger>
-          <TabsTrigger value="actions" className="font-bold">Action Items</TabsTrigger>
-        </TabsList>
+      <LoadingWrapper
+        isLoading={isLoading}
+        skeleton={
+          <div className="space-y-3 pt-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <DashboardFeedbackSkeleton key={i} />
+            ))}
+          </div>
+        }
+      >
+        <Tabs defaultValue="all" className="neo-brutalism-tabs">
+          <TabsList className="w-full sm:w-auto neo-brutalism-tabslist">
+            <TabsTrigger value="all" className="font-bold">All ({feedbackData.length})</TabsTrigger>
+            <TabsTrigger value="unread" className="font-bold">Unread ({unreadCount})</TabsTrigger>
+            <TabsTrigger value="actions" className="font-bold">Action Items</TabsTrigger>
+          </TabsList>
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2 pt-4 pb-2">
@@ -482,6 +509,7 @@ export default function FeedbackPage() {
           ))}
         </TabsContent>
       </Tabs>
+      </LoadingWrapper>
     </div>
   )
 }

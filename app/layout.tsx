@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${inter.className} flex justify-center items-center w-full min-h-screen`}>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

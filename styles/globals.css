@@ -90,5 +90,8 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 }
