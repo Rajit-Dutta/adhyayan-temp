@@ -34,6 +34,7 @@ import axios from "axios";
 import { loadableStudentCookieData } from "@/lib/store/student";
 import { useAtom } from "jotai";
 import { getCachedSubjectImage } from "@/lib/unsplash";
+import { useRouter } from "next/navigation";
 
 type ExpandedCourse = any;
 
@@ -63,6 +64,7 @@ export default function CoursesPage() {
   const teacherMap = useRef(new Map());
   const assignmentMap = useRef(new Map());
   const [student] = useAtom(loadableStudentCookieData);
+  const router = useRouter();
 
   // Simulate loading
   useEffect(() => {
@@ -127,16 +129,13 @@ export default function CoursesPage() {
             },
           ),
         );
-
         const assignmentResponses = await Promise.all(assignmentRequests);
-
         assignmentResponses.forEach((res, index) => {
           const batchId = studentBatches[index]._id.toString();
           assignmentMap.current.set(batchId, res.data);
         });
 
         setStudentBatchDetails(studentBatches);
-        console.log(assignmentMap);
 
         const allBatchRequests = batchIds.map(() =>
           axios.get(`${process.env.NEXT_PUBLIC_DOMAIN}/courses/getAllCourses`, {
@@ -145,7 +144,6 @@ export default function CoursesPage() {
             },
           }),
         );
-
         const alllBatchResponses = await Promise.all(allBatchRequests);
         const allBatches = await Promise.all(
           alllBatchResponses.flatMap((res) =>
@@ -156,6 +154,7 @@ export default function CoursesPage() {
             })),
           ),
         );
+
         const filteredAllBatches = allBatches.filter(
           (batch) =>
             !studentBatches.some(
@@ -171,9 +170,6 @@ export default function CoursesPage() {
     }
   };
 
-  console.log("To be browsed batches: ", allBatchDetails);
-  console.log("Enrolled batches: ", studentBatchDetails);
-
   return (
     <div className="space-y-6 w-full">
       {/* Header */}
@@ -181,7 +177,7 @@ export default function CoursesPage() {
         <div>
           <h2 className="text-2xl font-black tracking-tight">My Courses</h2>
           <p className="text-sm text-muted-foreground">
-            {studentBatchDetails.length} enrolled courses,
+            {studentBatchDetails.length} enrolled courses,{" "}
             {allBatchDetails.length} available to join
           </p>
         </div>
@@ -282,7 +278,7 @@ export default function CoursesPage() {
           </TabsList>
 
           {/* Enrolled Courses */}
-          <TabsContent value="enrolled" className="space-y-4 pt-4">
+          <TabsContent value="enrolled" className="grid gap-4 sm:grid-cols-2">
             {studentBatchDetails.map((course) => (
               <Card
                 key={course._id}
@@ -310,44 +306,42 @@ export default function CoursesPage() {
                         <div className="flex-1">
                           <h3 className="text-lg font-black">{course.name}</h3>
                           <p className="text-sm text-muted-foreground">
-                            {course.teacher}
+                            Teacher: {course.teacher}
                           </p>
                           <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />{" "}
-                              {/* {course.rating} */} XX
+                              {/* {course.rating}  */}
                             </span>
                             <span className="flex items-center gap-1">
                               <Users className="h-3 w-3" />{" "}
                               {course.students.length}
                             </span>
-                            <span className="flex items-center gap-1">
-                              <Video className="h-3 w-3" />{" "}
-                              {/* {course.totalLessons} lessons */} XX lessons
-                            </span>
+                            {/* <span className="flex items-center gap-1">
+                              <Video className="h-3 w-3" />
+                              course.totalLessons lessons 
+                            </span> */}
                           </div>
                         </div>
-                        <div className="text-right">
+                        {/* <div className="text-right">
                           <span className="text-2xl font-black text-primary">
-                            {/* {course.progress}% */} XX%
+                            {course.progress}% 
                           </span>
                           <p className="text-xs text-muted-foreground">
-                            {/* {course.completedLessons}/{course.totalLessons} done */}{" "}
+                            {course.completedLessons}/{course.totalLessons} done
                             XX/YY done
                           </p>
-                        </div>
+                        </div> */}
                       </div>
                       {/* <Progress
                         value={course.progress}
                         className="mt-3 neo-brutalism-progress"
                       /> */}
                       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="text-xs text-muted-foreground">
-                          Next:{" "}
-                          <span className="font-bold text-foreground">
-                            {/* {course.nextLesson} */}
-                          </span>
-                        </p>
+                        <Button className="w-1/2 neo-brutalism-button-sm text-xs h-10 gap-2">
+                          <FileText className="h-4 w-4" />
+                          View Syllabus PDF
+                        </Button>
                         <div className="flex items-center gap-2">
                           <Button
                             size="sm"
@@ -374,7 +368,7 @@ export default function CoursesPage() {
                   {/* Expanded Details */}
                   {expandedCourse === course._id && (
                     <div className="border-t-2 border-foreground bg-muted/30 p-4">
-                      <div className="grid gap-4 md:grid-cols-2">
+                      <div className="grid gap-4 md:grid-cols-1">
                         {/* Question Papers */}
                         <div>
                           <h4 className="mb-3 text-sm font-black">
@@ -386,16 +380,16 @@ export default function CoursesPage() {
                               .map((assignment: any, idx: any) => (
                                 <div
                                   key={idx}
-                                  className="flex items-center justify-between rounded-md border-2 border-foreground p-2.5 bg-blue-500/10"
+                                  onClick={() =>
+                                    window.open(assignment.link, "_blank")
+                                  }
+                                  className="cursor-pointer flex items-center justify-between rounded-md border-2 border-foreground p-2.5 bg-blue-500/10"
                                 >
                                   <div className="flex items-center gap-2">
                                     <FileText className="h-4 w-4 text-blue-600" />
                                     <div>
                                       <p className="text-xs font-bold">
                                         {assignment.name}
-                                      </p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {assignment.size}
                                       </p>
                                     </div>
                                   </div>
@@ -414,25 +408,6 @@ export default function CoursesPage() {
                                 No question papers available yet
                               </p>
                             )}
-                          </div>
-                        </div>
-                        {/* Syllabus */}
-                        <div>
-                          <h4 className="mb-3 text-sm font-black">
-                            Course Syllabus
-                          </h4>
-                          <div className="space-y-2">
-                            <Button className="w-full neo-brutalism-button-sm text-xs h-10 gap-2">
-                              <FileText className="h-4 w-4" />
-                              View Syllabus PDF
-                            </Button>
-                            <Button
-                              variant="outline"
-                              className="w-full neo-brutalism-button-outline-sm text-xs h-10 gap-2"
-                            >
-                              <Download className="h-4 w-4" />
-                              Download Syllabus
-                            </Button>
                           </div>
                         </div>
                       </div>
@@ -460,64 +435,65 @@ export default function CoursesPage() {
                 </Button>
               ))}
             </div>
-
             <div className="grid gap-4 sm:grid-cols-3">
-              {allBatchDetails.map((course) => (
-                <Card
-                  key={course._id}
-                  className="neo-brutalism-card overflow-hidden"
-                >
-                  <div className="relative h-32 overflow-hidden">
-                    <Image
-                      src={course.pic || "/placeholder.svg"}
-                      alt={course.name}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-2 left-2">
-                      <span className="rounded-md bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
-                        {course.subject}
-                      </span>
+              {allBatchDetails
+                .filter((batch: any) => selectedCategory === "All" || batch.subject === selectedCategory)
+                .map((course) => (
+                  <Card
+                    key={course._id}
+                    className="neo-brutalism-card overflow-hidden"
+                  >
+                    <div className="relative h-32 overflow-hidden">
+                      <Image
+                        src={course.pic || "/placeholder.svg"}
+                        alt={course.name}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <div className="absolute bottom-2 left-2">
+                        <span className="rounded-md bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
+                          {course.subject}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-black">{course.name}</h3>
-                    <p className="text-xs text-muted-foreground">
-                      {course.teacher}
-                    </p>
-                    <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />{" "}
-                        {/* {course.rating} */}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" /> {course.students.length}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {/* {course.duration} */}
-                      </span>
-                    </div>
-                    <div className="mt-3 flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        className="flex-1 neo-brutalism-button-sm text-xs h-8"
-                      >
-                        Enroll Now
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="neo-brutalism-button-outline-sm text-xs h-8 bg-transparent"
-                        onClick={() => setPreviewCourse(course._id)}
-                      >
-                        Preview
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <CardContent className="p-4">
+                      <h3 className="font-black">{course.name}</h3>
+                      <p className="text-xs text-muted-foreground">
+                        {course.teacher}
+                      </p>
+                      <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />{" "}
+                          {/* {course.rating} */}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3 w-3" /> {course.students.length}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {/* {course.duration} */}
+                        </span>
+                      </div>
+                      <div className="mt-3 flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          className="flex-1 neo-brutalism-button-sm text-xs h-8"
+                        >
+                          Enroll Now
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="neo-brutalism-button-outline-sm text-xs h-8 bg-transparent"
+                          onClick={() => setPreviewCourse(course._id)}
+                        >
+                          Preview
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
             </div>
           </TabsContent>
         </Tabs>
