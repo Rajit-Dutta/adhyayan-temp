@@ -79,10 +79,11 @@ export default function CoursesPage() {
   const categories = [
     "All",
     "Mathematics",
-    "Science",
-    "Language",
-    "Humanities",
-    "Technology",
+    "Physics",
+    "Chemistry",
+    "Biology",
+    "English",
+    "Computer Science",
   ];
 
   const getBatchDetails = async () => {
@@ -95,6 +96,13 @@ export default function CoursesPage() {
           },
         );
 
+        const teacherDetailsRes = await axios.get(
+          `${process.env.NEXT_PUBLIC_DOMAIN}/teachers/getTeacherNames`,
+        );
+        teacherDetailsRes.data.forEach((teacher: any) => {
+          teacherMap.current.set(teacher._id, teacher.fullName);
+        });
+
         const batchIds = studentRes.data.batch;
         const batchRequests = batchIds.map((id: string) =>
           axios.get(
@@ -102,13 +110,6 @@ export default function CoursesPage() {
             { params: { id } },
           ),
         );
-
-        const teacherDetailsRes = await axios.get(
-          `${process.env.NEXT_PUBLIC_DOMAIN}/teachers/getTeacherNames`,
-        );
-        teacherDetailsRes.data.forEach((teacher: any) => {
-          teacherMap.current.set(teacher._id, teacher.fullName);
-        });
 
         const batchResponses = await Promise.all(batchRequests);
         const studentBatches = await Promise.all(
@@ -437,7 +438,11 @@ export default function CoursesPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               {allBatchDetails
-                .filter((batch: any) => selectedCategory === "All" || batch.subject === selectedCategory)
+                .filter(
+                  (batch: any) =>
+                    selectedCategory === "All" ||
+                    batch.subject === selectedCategory,
+                )
                 .map((course) => (
                   <Card
                     key={course._id}
