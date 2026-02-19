@@ -34,7 +34,6 @@ import axios from "axios";
 import { loadableStudentCookieData } from "@/lib/store/student";
 import { useAtom } from "jotai";
 import { getCachedSubjectImage } from "@/lib/unsplash";
-import { useRouter } from "next/navigation";
 
 type ExpandedCourse = any;
 
@@ -47,6 +46,11 @@ type BatchDetails = {
   students: string[];
   teacher: any;
   status: string;
+  syllabus: {
+    _id: string;
+    chapterName: string;
+    topicCovered: string;
+  }[];
   createdAt: string;
   updatedAt: string;
 };
@@ -61,10 +65,11 @@ export default function CoursesPage() {
     BatchDetails[]
   >([]);
   const [allBatchDetails, setAllBatchDetails] = useState<BatchDetails[]>([]);
+  const [syllabusModal, setSyllabusModal] = useState<string | null>(null);
+
   const teacherMap = useRef(new Map());
   const assignmentMap = useRef(new Map());
   const [student] = useAtom(loadableStudentCookieData);
-  const router = useRouter();
 
   // Simulate loading
   useEffect(() => {
@@ -274,12 +279,16 @@ export default function CoursesPage() {
               Enrolled ({studentBatchDetails.length})
             </TabsTrigger>
             <TabsTrigger value="available" className="font-bold">
-              Browse Courses
+              Browse Course{allBatchDetails.length > 1 ? "s" : ""} (
+              {allBatchDetails.length})
             </TabsTrigger>
           </TabsList>
 
           {/* Enrolled Courses */}
-          <TabsContent value="enrolled" className="grid gap-4 sm:grid-cols-2">
+          <TabsContent
+            value="enrolled"
+            className="grid gap-4 sm:grid-cols-2 mt-4"
+          >
             {studentBatchDetails.map((course) => (
               <Card
                 key={course._id}
@@ -318,28 +327,47 @@ export default function CoursesPage() {
                               <Users className="h-3 w-3" />{" "}
                               {course.students.length}
                             </span>
-                            {/* <span className="flex items-center gap-1">
+                            <span className="flex items-center gap-1">
                               <Video className="h-3 w-3" />
-                              course.totalLessons lessons 
-                            </span> */}
+                              {course.syllabus.length} lesson
+                              {course.syllabus.length > 1 ? "s" : ""}
+                            </span>
                           </div>
                         </div>
-                        {/* <div className="text-right">
+                        <div className="text-right">
                           <span className="text-2xl font-black text-primary">
-                            {course.progress}% 
+                            {(course.syllabus.filter(
+                              (c: any) => c.topicCovered === true,
+                            ).length /
+                              course.syllabus.length) *
+                              100}
+                            %
                           </span>
                           <p className="text-xs text-muted-foreground">
-                            {course.completedLessons}/{course.totalLessons} done
-                            XX/YY done
+                            {
+                              course.syllabus.filter(
+                                (c: any) => c.topicCovered === true,
+                              ).length
+                            }
+                            /{course.syllabus.length} done
                           </p>
-                        </div> */}
+                        </div>
                       </div>
-                      {/* <Progress
-                        value={course.progress}
+                      <Progress
+                        value={
+                          (course.syllabus.filter(
+                            (c: any) => c.topicCovered === true,
+                          ).length /
+                            course.syllabus.length) *
+                          100
+                        }
                         className="mt-3 neo-brutalism-progress"
-                      /> */}
+                      />
                       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <Button className="w-1/2 neo-brutalism-button-sm text-xs h-10 gap-2">
+                        <Button
+                          className="w-1/2 neo-brutalism-button-sm text-xs h-10 gap-2"
+                          onClick={() => setSyllabusModal(course._id)}
+                        >
                           <FileText className="h-4 w-4" />
                           View Syllabus PDF
                         </Button>
@@ -420,7 +448,7 @@ export default function CoursesPage() {
           </TabsContent>
 
           {/* Browse Courses */}
-          <TabsContent value="available" className="space-y-4 pt-4">
+          <TabsContent value="available" className="space-y-4">
             {/* Category Filters */}
             <div className="flex flex-wrap items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" />
@@ -562,16 +590,14 @@ export default function CoursesPage() {
                             Lessons
                           </p>
                           <p className="text-sm font-bold">
-                            {/* {course.lessons} */} XX
+                            {course.syllabus?.length}
                           </p>
                         </div>
                         <div className="rounded-md border-2 border-foreground p-2">
                           <p className="text-xs text-muted-foreground">
                             Duration
                           </p>
-                          <p className="text-sm font-bold">
-                            {/* {course.duration} */} XX
-                          </p>
+                          <p className="text-sm font-bold">12 months</p>
                         </div>
                       </div>
 
@@ -602,6 +628,165 @@ export default function CoursesPage() {
                     </div>
                   </div>
                 ))}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Syllabus Modal */}
+      {syllabusModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <Card className="neo-brutalism-card w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b-2 border-foreground p-4 sticky top-0 bg-background">
+              <h2 className="text-lg font-black">Course Syllabus</h2>
+              <button
+                onClick={() => setSyllabusModal(null)}
+                className="rounded-md p-1 hover:bg-muted"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <CardContent className="p-4 space-y-4">
+              {studentBatchDetails
+                .filter((c) => c._id === syllabusModal && c.syllabus)
+                .map((course) => {
+                  const covered = course.syllabus.filter(
+                    (c: any) => c.topicCovered === true,
+                  ).length;
+                  const total = course.syllabus.length;
+                  const percentage = Math.round((covered / total) * 100);
+
+                  return (
+                    <div key={course._id} className="space-y-4">
+                      {/* Course Title */}
+                      <div className="space-y-1">
+                        <h3 className="text-xl font-black">{course.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Instructor: {course.teacher}
+                        </p>
+                      </div>
+
+                      {/* Overview Cards */}
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        <div className="rounded-md border-2 border-foreground p-2 bg-green-500/10">
+                          <p className="text-xs text-muted-foreground">
+                            Topics Covered
+                          </p>
+                          <p className="text-lg font-black text-green-600">
+                            {covered}
+                          </p>
+                        </div>
+
+                        <div className="rounded-md border-2 border-foreground p-2 bg-blue-500/10">
+                          <p className="text-xs text-muted-foreground">
+                            Remaining
+                          </p>
+                          <p className="text-lg font-black text-blue-600">
+                            {total - covered}
+                          </p>
+                        </div>
+
+                        <div className="rounded-md border-2 border-foreground p-2 bg-primary/10">
+                          <p className="text-xs text-muted-foreground">
+                            Total Topics
+                          </p>
+                          <p className="text-lg font-black text-primary">
+                            {total}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Topics List */}
+                      <div className="space-y-2">
+                        <h4 className="font-black text-sm">Course Topics</h4>
+
+                        {course.syllabus.map((topic, idx) => (
+                          <div
+                            key={idx}
+                            className={`flex items-center gap-3 rounded-md border-2 border-foreground p-3 transition-colors ${
+                              course.syllabus.filter(
+                                (c: any) => c.topicCovered === true,
+                              ).length
+                                ? "bg-green-500/5"
+                                : "bg-muted/30"
+                            }`}
+                          >
+                            {/* Checkbox */}
+                            <div
+                              className={`h-5 w-5 flex items-center justify-center border-2 border-foreground rounded ${
+                                course.syllabus.filter(
+                                  (c: any) => c.topicCovered === true,
+                                )
+                                  ? "bg-green-600"
+                                  : ""
+                              }`}
+                            >
+                              {course.syllabus.filter(
+                                (c: any) => c.topicCovered === true,
+                              ) && (
+                                <CheckCircle2 className="h-4 w-4 text-white" />
+                              )}
+                            </div>
+
+                            {/* Topic Name */}
+                            <span
+                              className={`text-sm font-medium flex-1 ${
+                                course.syllabus.filter(
+                                  (c: any) => c.topicCovered === true,
+                                )
+                                  ? "line-through text-muted-foreground"
+                                  : ""
+                              }`}
+                            >
+                              {topic.chapterName}
+                            </span>
+
+                            {/* Status Badge */}
+                            <span
+                              className={`text-xs font-bold px-2 py-1 rounded border border-foreground ${
+                                course.syllabus.filter(
+                                  (c: any) => c.topicCovered === true,
+                                )
+                                  ? "bg-green-600 text-white"
+                                  : "bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              {course.syllabus.filter(
+                                (c: any) => c.topicCovered === true,
+                              )
+                                ? "Covered"
+                                : "Pending"}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Progress Section */}
+                      <div className="space-y-2 pt-2">
+                        <div className="flex justify-between items-center">
+                          <p className="text-xs font-bold">Syllabus Progress</p>
+                          <p className="text-xs font-bold">{percentage}%</p>
+                        </div>
+
+                        <Progress
+                          value={percentage}
+                          className="h-3 bg-muted border-2 border-foreground rounded"
+                        />
+                      </div>
+
+                      {/* Close Button */}
+                      <Button
+                        variant="outline"
+                        className="w-full neo-brutalism-button-outline mt-4"
+                        onClick={() => setSyllabusModal(null)}
+                      >
+                        Close
+                      </Button>
+                    </div>
+                  );
+                })}
             </CardContent>
           </Card>
         </div>
