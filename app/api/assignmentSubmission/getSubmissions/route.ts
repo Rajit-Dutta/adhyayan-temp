@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
     const retrievedSubmissions = await assignmentSubmissionModel.find({
       submittedBy: studentId,
     });
+    
     if (!retrievedSubmissions) {
       return new Response("No assignment submitted so far", { status: 404 });
     }

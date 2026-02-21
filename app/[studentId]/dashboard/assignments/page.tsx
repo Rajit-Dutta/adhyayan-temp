@@ -53,15 +53,12 @@ type AssignmentSubmission = {
   assignment: string;
   assignedBy: string;
   submittedBy: string;
-  checkedBy?: string;
-  submissionDate: Date;
   submissionLink: string;
   marksScored: number;
-  feedback?: string;
-  isLate: boolean;
+  studentComment: string;
+  teacherFeedback?: string;
   status: "submitted" | "graded" | "pending";
-  createdAt: Date;
-  updatedAt: Date;
+  submissionDate: Date;
 };
 
 export default function AssignmentsPage() {
@@ -69,7 +66,7 @@ export default function AssignmentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [viewModal, setViewModal] = useState<number | null>(null);
-  const [selectedAssignment, setSelectedAssignment] = useState<string>("");
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment>();
   const [filterSubject, setFilterSubject] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [pendingAssignments, setPendingAssignments] = useState<Assignment[]>(
@@ -81,6 +78,18 @@ export default function AssignmentsPage() {
   const [gradedAssignments, setGradedAssignments] = useState<
     AssignmentSubmission[]
   >([]);
+  const [submitAssignmentData, setSubmitAssignmentData] = useState({
+    assignment: "",
+    assignedBy: "",
+    submittedBy: "",
+    submissionLink: null as File | null,
+    marksScored: 0,
+    studentComment: "",
+    teacherFeedback: "",
+    status: "submitted",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
   const teacherMap = useRef(new Map());
   const submittedAssignmentMap = useRef(new Map());
 
@@ -104,6 +113,15 @@ export default function AssignmentsPage() {
     "English",
     "Computer Science",
   ];
+
+  function getKeyByValue(map: Map<string, string>, value: string) {
+    for (let [key, val] of map.entries()) {
+      if (val === value) {
+        return key;
+      }
+    }
+    return null;
+  }
 
   const fetchPendingAssignment = async () => {
     try {
@@ -202,6 +220,64 @@ export default function AssignmentsPage() {
       return "bg-yellow-100 text-yellow-800 border-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-500";
     return "bg-red-100 text-red-800 border-red-800 dark:bg-red-900/30 dark:text-red-400 dark:border-red-500";
   };
+
+  const handleAssignmentSubmission = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!selectedAssignment) {
+      console.error("No assignment selected");
+      return;
+    }
+
+    if (student.state === "hasData") {
+      const assignmentToSubmit = new FormData();
+      assignmentToSubmit.append("assignment", selectedAssignment._id);
+      const teacherId = getKeyByValue(
+        teacherMap.current,
+        selectedAssignment.assignedBy,
+      );
+      if (!teacherId) {
+        console.error("Teacher ID not found");
+        return;
+      }
+      assignmentToSubmit.append("assignedBy", teacherId);
+      assignmentToSubmit.append("submittedBy", student.data.jwtDecoded.id);
+      assignmentToSubmit.append("marksScored", "0");
+      assignmentToSubmit.append(
+        "studentComment",
+        submitAssignmentData.studentComment,
+      );
+      assignmentToSubmit.append("status", "submitted");
+      assignmentToSubmit.append("createdAt", new Date().toISOString());
+      if (submitAssignmentData.submissionLink) {
+        assignmentToSubmit.append(
+          "submissionLink",
+          submitAssignmentData.submissionLink,
+        );
+      }
+      try {
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_DOMAIN}/assignmentSubmission/createSubmission`,
+          assignmentToSubmit,
+        );
+        console.log("Successfully created assignment -> ", response.data);
+        setShowUploadModal(false);
+        await fetchPendingAssignment();
+        await fetchSubmittedAssignment();
+      } catch (error) {
+        console.error("Error in creating an assignment:", error);
+        return new Response("Internal Server Error", { status: 500 });
+      }
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const submissionLink = e.target.files?.[0] || null;
+    setSubmitAssignmentData({ ...submitAssignmentData, submissionLink });
+  };
+
+  console.log("Submitted Assignment : ", submittedAssignments);
+  console.log("Pending Assignment : ", pendingAssignments);
 
   return (
     <div className="space-y-6">
@@ -312,7 +388,20 @@ export default function AssignmentsPage() {
             }}
           >
             <TabsTrigger value="pending" className="font-bold">
-              Pending ({pendingAssignments.length})
+              Pending (
+              {
+                pendingAssignments.filter(
+                  (assignment: any) =>
+                    (filterSubject === "All" ||
+                      assignment.subject === filterSubject) &&
+                    !submittedAssignments.some(
+                      (sub) =>
+                        sub.assignment === assignment._id &&
+                        sub.status === "submitted",
+                    ),
+                ).length
+              }
+              )
             </TabsTrigger>
             <TabsTrigger value="submitted" className="font-bold">
               Submitted (
@@ -366,8 +455,13 @@ export default function AssignmentsPage() {
               {pendingAssignments
                 .filter(
                   (assignment: any) =>
-                    filterSubject === "All" ||
-                    assignment.subject === filterSubject,
+                    (filterSubject === "All" ||
+                      assignment.subject === filterSubject) &&
+                    !submittedAssignments.some(
+                      (sub) =>
+                        sub.assignment === assignment._id &&
+                        sub.status === "submitted",
+                    ),
                 )
                 .map((a: Assignment) => (
                   <Card key={a._id} className="neo-brutalism-card">
@@ -434,7 +528,7 @@ export default function AssignmentsPage() {
                                 size="sm"
                                 className="neo-brutalism-button-sm text-xs h-8 flex-1 sm:flex-none"
                                 onClick={() => {
-                                  setSelectedAssignment(a.title);
+                                  setSelectedAssignment(a);
                                   setShowUploadModal(true);
                                 }}
                               >
@@ -478,14 +572,14 @@ export default function AssignmentsPage() {
                             </span>
                           </div>
                         </div>
-                        <div className="flex flex-wrap justify-between items-center flex-row mt-2 w-2/3">
+                        <div className="grid grid-row-4 mt-2 w-full">
+                          <span className="font-normal text-md text-foreground">
+                            {
+                              submittedAssignmentMap.current.get(a.assignment)
+                                ?.subject
+                            }
+                          </span>
                           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                            <span className="font-bold text-foreground">
-                              {
-                                submittedAssignmentMap.current.get(a.assignment)
-                                  ?.subject
-                              }
-                            </span>
                             <span>{a.assignedBy}</span>
                             <span>
                               Submitted:{" "}
@@ -500,8 +594,8 @@ export default function AssignmentsPage() {
                             </span>
                           </div>
                         </div>
-                        <div className="flex justify-between items-center mt-2">
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <div className="flex justify-between items-center mt-4">
+                          {/* <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                             <FileText className="h-3 w-3" />
                             <span>
                               {
@@ -509,6 +603,14 @@ export default function AssignmentsPage() {
                                   ?.title
                               }
                             </span>
+                          </div> */}
+                          <div className="rounded-md border-2 border-foreground bg-muted/50 p-2 w-full mr-3">
+                            <p className="text-xs font-bold mb-1">
+                              Comment:
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {a.studentComment}
+                            </p>
                           </div>
                           <Button
                             size="sm"
@@ -587,7 +689,7 @@ export default function AssignmentsPage() {
                               Teacher Feedback:
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {a.feedback}
+                              {a.teacherFeedback}
                             </p>
                           </div>
                         </div>
@@ -642,11 +744,16 @@ export default function AssignmentsPage() {
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold">Select Assignment</Label>
                   <select
-                    value={selectedAssignment}
-                    onChange={(e) => setSelectedAssignment(e.target.value)}
+                    value={selectedAssignment?.title}
+                    onChange={(e) =>
+                      setSubmitAssignmentData({
+                        ...submitAssignmentData,
+                        assignment: e.target.value,
+                      })
+                    }
                     className="flex h-9 w-full rounded-md border-2 border-foreground bg-background px-3 text-sm"
                   >
-                    <option value="">{selectedAssignment}</option>
+                    <option value="">{selectedAssignment?.title}</option>
                   </select>
                 </div>
                 <div className="space-y-1.5">
@@ -657,13 +764,20 @@ export default function AssignmentsPage() {
                   >
                     <Upload className="h-6 w-6 text-muted-foreground" />
                     <p className="mt-1 text-xs font-bold">
-                      Click or drag file here
+                      {submitAssignmentData.submissionLink
+                        ? submitAssignmentData.submissionLink.name
+                        : "Click to upload or drag and drop"}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       PDF, DOCX, Images (max 10MB)
                     </p>
                   </label>
-                  <Input id="file-upload" type="file" className="hidden" />
+                  <Input
+                    id="file-upload"
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold">
@@ -672,16 +786,25 @@ export default function AssignmentsPage() {
                   <textarea
                     className="flex min-h-[70px] w-full rounded-md border-2 border-foreground bg-background px-3 py-2 text-sm placeholder:text-muted-foreground"
                     placeholder="Any notes for your teacher..."
+                    onChange={(e) =>
+                      setSubmitAssignmentData({
+                        ...submitAssignmentData,
+                        studentComment: e.target.value,
+                      })
+                    }
                   />
                 </div>
                 <div className="flex gap-2 pt-2">
-                  <Button className="flex-1 neo-brutalism-button text-sm">
+                  <Button
+                    onClick={handleAssignmentSubmission}
+                    className="flex-1 neo-brutalism-button text-sm"
+                  >
                     Submit Assignment
                   </Button>
                   <Button
                     variant="outline"
                     className="neo-brutalism-button-outline text-sm bg-transparent"
-                    onClick={() => setShowUploadModal(false)}
+                    onClick={(e) => setShowUploadModal(false)}
                   >
                     Cancel
                   </Button>
@@ -786,13 +909,15 @@ export default function AssignmentsPage() {
                         </div>
                       )}
 
-                      {/* Feedback */}
+                      {/* TeacherFeedback */}
                       {"feedback" in assignment && (
                         <div className="rounded-md border-2 border-foreground bg-muted/50 p-3">
                           <p className="text-xs font-bold mb-2">
                             Teacher Feedback:
                           </p>
-                          <p className="text-sm">{assignment.feedback}</p>
+                          <p className="text-sm">
+                            {assignment.teacherFeedback}
+                          </p>
                         </div>
                       )}
 
@@ -816,7 +941,7 @@ export default function AssignmentsPage() {
                       </div>
 
                       {/* File Section */}
-                      {"fileName" in assignment && (
+                      {/* {"fileName" in assignment && (
                         <div className="rounded-md border-2 border-foreground p-3">
                           <p className="text-xs font-bold mb-2">
                             Submitted File:
@@ -841,7 +966,7 @@ export default function AssignmentsPage() {
                             </Button>
                           </div>
                         </div>
-                      )}
+                      )} */}
 
                       {/* Close Button */}
                       <Button
