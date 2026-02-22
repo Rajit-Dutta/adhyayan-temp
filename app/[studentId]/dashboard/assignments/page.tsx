@@ -65,7 +65,7 @@ export default function AssignmentsPage() {
   const [student] = useAtom(loadableStudentCookieData);
   const [isLoading, setIsLoading] = useState(true);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [viewModal, setViewModal] = useState<number | null>(null);
+  const [viewModal, setViewModal] = useState<string | null>(null);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment>();
   const [filterSubject, setFilterSubject] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -312,7 +312,18 @@ export default function AssignmentsPage() {
                 <div>
                   <p className="text-xs text-muted-foreground">Pending</p>
                   <p className="text-lg font-black">
-                    {pendingAssignments.length}
+                    {
+                      pendingAssignments.filter(
+                        (assignment: any) =>
+                          (filterSubject === "All" ||
+                            assignment.subject === filterSubject) &&
+                          !submittedAssignments.some(
+                            (sub) =>
+                              sub.assignment === assignment._id &&
+                              sub.status === "submitted",
+                          ),
+                      ).length
+                    }
                   </p>
                 </div>
               </div>
@@ -327,7 +338,11 @@ export default function AssignmentsPage() {
                 <div>
                   <p className="text-xs text-muted-foreground">Under Review</p>
                   <p className="text-lg font-black">
-                    {submittedAssignments.length}
+                    {
+                      submittedAssignments.filter(
+                        (assignment) => assignment.status === "submitted",
+                      ).length
+                    }
                   </p>
                 </div>
               </div>
@@ -342,7 +357,11 @@ export default function AssignmentsPage() {
                 <div>
                   <p className="text-xs text-muted-foreground">Graded</p>
                   <p className="text-lg font-black">
-                    {gradedAssignments.length}
+                    {
+                      submittedAssignments.filter(
+                        (assignment) => assignment.status === "graded",
+                      ).length
+                    }
                   </p>
                 </div>
               </div>
@@ -357,11 +376,15 @@ export default function AssignmentsPage() {
                 <div>
                   <p className="text-xs text-muted-foreground">Avg. Score</p>
                   <p className="text-lg font-black">
-                    {/* {Math.round(
-                      gradedAssignments.reduce((a, b) => a + b.percentage, 0) /
-                        gradedAssignments.length,
-                    )} */}
-                    XX%
+                    {Math.round(
+                      submittedAssignments
+                        .filter((assignment) => assignment.status === "graded")
+                        .reduce((a, b) => a + b.marksScored, 0) /
+                        submittedAssignments.filter(
+                          (assignment) => assignment.status === "graded",
+                        ).length,
+                    )}
+                    %
                   </p>
                 </div>
               </div>
@@ -573,7 +596,7 @@ export default function AssignmentsPage() {
                           </div>
                         </div>
                         <div className="grid grid-row-4 mt-2 w-full">
-                          <span className="font-normal text-md text-foreground">
+                          <span className="font-bold text-xs text-foreground">
                             {
                               submittedAssignmentMap.current.get(a.assignment)
                                 ?.subject
@@ -595,19 +618,8 @@ export default function AssignmentsPage() {
                           </div>
                         </div>
                         <div className="flex justify-between items-center mt-4">
-                          {/* <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <FileText className="h-3 w-3" />
-                            <span>
-                              {
-                                submittedAssignmentMap.current.get(a.assignment)
-                                  ?.title
-                              }
-                            </span>
-                          </div> */}
                           <div className="rounded-md border-2 border-foreground bg-muted/50 p-2 w-full mr-3">
-                            <p className="text-xs font-bold mb-1">
-                              Comment:
-                            </p>
+                            <p className="text-xs font-bold mb-1">Comment:</p>
                             <p className="text-xs text-muted-foreground">
                               {a.studentComment}
                             </p>
@@ -616,7 +628,7 @@ export default function AssignmentsPage() {
                             size="sm"
                             variant="outline"
                             className="neo-brutalism-button-outline-sm text-xs h-8 bg-transparent"
-                            onClick={() => setViewModal(parseInt(a.assignment))}
+                            onClick={() => setViewModal(a.assignment)}
                           >
                             View Submission
                           </Button>
@@ -710,7 +722,7 @@ export default function AssignmentsPage() {
                             size="sm"
                             variant="outline"
                             className="neo-brutalism-button-outline-sm text-xs h-8 bg-transparent"
-                            onClick={() => setViewModal(parseInt(a.assignment))}
+                            onClick={() => setViewModal(a.assignment)}
                           >
                             <Eye className="h-3 w-3" /> View
                           </Button>
@@ -829,7 +841,7 @@ export default function AssignmentsPage() {
               </div>
               <CardContent className="p-4 space-y-4">
                 {[...gradedAssignments, ...submittedAssignments]
-                  .filter((a) => parseInt(a.assignment) === viewModal)
+                  .filter((a) => a.assignment === viewModal)
                   .map((assignment) => (
                     <div key={assignment.assignment} className="space-y-4">
                       {/* Header */}
@@ -878,7 +890,7 @@ export default function AssignmentsPage() {
                       </div>
 
                       {/* Grade Info (if graded) */}
-                      {"percentage" in assignment && (
+                      {"marksScored" in assignment && (
                         <div className="rounded-md border-2 border-foreground bg-green-500/10 p-3 space-y-2">
                           <div className="grid grid-cols-3 gap-3">
                             <div className="text-center">
@@ -909,11 +921,23 @@ export default function AssignmentsPage() {
                         </div>
                       )}
 
-                      {/* TeacherFeedback */}
-                      {"feedback" in assignment && (
+                      {/* StudentComment */}
+                      {"studentComment" in assignment && (
                         <div className="rounded-md border-2 border-foreground bg-muted/50 p-3">
                           <p className="text-xs font-bold mb-2">
-                            Teacher Feedback:
+                            Student's comment:
+                          </p>
+                          <p className="text-sm">
+                            {assignment.studentComment}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* TeacherFeedback */}
+                      {"teacherFeedback" in assignment && (
+                        <div className="rounded-md border-2 border-foreground bg-muted/50 p-3">
+                          <p className="text-xs font-bold mb-2">
+                            Teacher's Feedback:
                           </p>
                           <p className="text-sm">
                             {assignment.teacherFeedback}
@@ -941,7 +965,7 @@ export default function AssignmentsPage() {
                       </div>
 
                       {/* File Section */}
-                      {/* {"fileName" in assignment && (
+                      {"fileName" in assignment && (
                         <div className="rounded-md border-2 border-foreground p-3">
                           <p className="text-xs font-bold mb-2">
                             Submitted File:
@@ -966,7 +990,7 @@ export default function AssignmentsPage() {
                             </Button>
                           </div>
                         </div>
-                      )} */}
+                      )}
 
                       {/* Close Button */}
                       <Button
