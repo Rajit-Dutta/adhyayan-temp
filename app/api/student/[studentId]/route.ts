@@ -2,7 +2,6 @@ import { dbConnect } from "@/lib/db";
 import { NextResponse, NextRequest } from "next/server";
 import studentModel from "@/models/Student";
 import { getDataFromToken } from "@/helpers/getDataFromToken";
-import { get } from "http";
 
 dbConnect();
 

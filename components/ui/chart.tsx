@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import type * as React from "react"
+import type * as React from "react";
 import {
   Area,
   AreaChart as RechartsAreaChart,
@@ -15,9 +15,9 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts"
+} from "recharts";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const chartConfig = {
   colors: {
@@ -31,22 +31,22 @@ const chartConfig = {
     purple: "hsl(var(--purple))",
     gray: "hsl(var(--muted-foreground))",
   },
-}
+};
 
 interface AreaChartProps extends React.HTMLAttributes<HTMLDivElement> {
-  data: any[]
-  index: string
-  categories: string[]
-  colors?: string[]
-  valueFormatter?: (value: number) => string
-  yAxisWidth?: number
-  showXAxis?: boolean
-  showYAxis?: boolean
-  showLegend?: boolean
-  showGridLines?: boolean
-  showTooltip?: boolean
-  showGradient?: boolean
-  startEndOnly?: boolean
+  data: any[];
+  index: string;
+  categories: string[];
+  colors?: string[];
+  valueFormatter?: (value: number) => string;
+  yAxisWidth?: number;
+  showXAxis?: boolean;
+  showYAxis?: boolean;
+  showLegend?: boolean;
+  showGridLines?: boolean;
+  showTooltip?: boolean;
+  showGradient?: boolean;
+  startEndOnly?: boolean;
 }
 
 function AreaChart({
@@ -66,7 +66,10 @@ function AreaChart({
   className,
   ...props
 }: AreaChartProps) {
-  const mappedColors = colors.map((color) => chartConfig.colors[color as keyof typeof chartConfig.colors] || color)
+  const mappedColors = colors.map(
+    (color) =>
+      chartConfig.colors[color as keyof typeof chartConfig.colors] || color,
+  );
 
   return (
     <div className={cn("w-full h-80", className)} {...props}>
@@ -80,7 +83,9 @@ function AreaChart({
             bottom: 0,
           }}
         >
-          {showGridLines && <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />}
+          {showGridLines && (
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+          )}
           {showXAxis && (
             <XAxis
               dataKey={index}
@@ -90,12 +95,16 @@ function AreaChart({
               tickMargin={8}
               tickFormatter={(value) => {
                 if (typeof value === "string") {
-                  return value
+                  return value;
                 }
-                return value.toString()
+                return value.toString();
               }}
               tick={{ fontSize: 12 }}
-              ticks={startEndOnly ? [data[0][index], data[data.length - 1][index]] : undefined}
+              ticks={
+                startEndOnly && data.length > 1
+                  ? [data[0][index], data[data.length - 1][index]]
+                  : undefined
+              }
             />
           )}
           {showYAxis && (
@@ -117,9 +126,14 @@ function AreaChart({
                     <div className="rounded-lg border bg-background p-2 shadow-sm">
                       <div className="grid grid-cols-2 gap-2">
                         <div className="flex flex-col">
-                          <span className="text-xs text-muted-foreground">{label}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {label}
+                          </span>
                           {payload.map((entry, index) => (
-                            <span key={`item-${index}`} className="text-sm font-medium">
+                            <span
+                              key={`item-${index}`}
+                              className="text-sm font-medium"
+                            >
                               {valueFormatter(entry.value as number)}
                             </span>
                           ))}
@@ -131,16 +145,19 @@ function AreaChart({
                               className="flex items-center text-xs"
                               style={{ color: entry.color }}
                             >
-                              <span className="mr-1 size-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                              <span
+                                className="mr-1 size-2 rounded-full"
+                                style={{ backgroundColor: entry.color }}
+                              />
                               {entry.name}
                             </span>
                           ))}
                         </div>
                       </div>
                     </div>
-                  )
+                  );
                 }
-                return null
+                return null;
               }}
             />
           )}
@@ -151,24 +168,46 @@ function AreaChart({
                   return (
                     <div className="flex flex-wrap items-center justify-end gap-4">
                       {payload.map((entry, index) => (
-                        <div key={`item-${index}`} className="flex items-center gap-1">
-                          <div className="size-3 rounded-full" style={{ backgroundColor: entry.color }} />
-                          <span className="text-xs text-muted-foreground">{entry.value}</span>
+                        <div
+                          key={`item-${index}`}
+                          className="flex items-center gap-1"
+                        >
+                          <div
+                            className="size-3 rounded-full"
+                            style={{ backgroundColor: entry.color }}
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {entry.value}
+                          </span>
                         </div>
                       ))}
                     </div>
-                  )
+                  );
                 }
-                return null
+                return null;
               }}
             />
           )}
           {categories.map((category, index) => (
             <defs key={`gradient-${index}`}>
               {showGradient && (
-                <linearGradient id={`gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={mappedColors[index % mappedColors.length]} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={mappedColors[index % mappedColors.length]} stopOpacity={0} />
+                <linearGradient
+                  id={`gradient-${index}`}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="5%"
+                    stopColor={mappedColors[index % mappedColors.length]}
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor={mappedColors[index % mappedColors.length]}
+                    stopOpacity={0}
+                  />
                 </linearGradient>
               )}
             </defs>
@@ -181,30 +220,36 @@ function AreaChart({
               stroke={mappedColors[index % mappedColors.length]}
               strokeWidth={2}
               fill={showGradient ? `url(#gradient-${index})` : "transparent"}
-              activeDot={{ r: 6, style: { fill: mappedColors[index % mappedColors.length], opacity: 0.8 } }}
+              activeDot={{
+                r: 6,
+                style: {
+                  fill: mappedColors[index % mappedColors.length],
+                  opacity: 0.8,
+                },
+              }}
               name={category}
             />
           ))}
         </RechartsAreaChart>
       </ResponsiveContainer>
     </div>
-  )
+  );
 }
 
 interface BarChartProps extends React.HTMLAttributes<HTMLDivElement> {
-  data: any[]
-  index: string
-  categories: string[]
-  colors?: string[]
-  valueFormatter?: (value: number) => string
-  yAxisWidth?: number
-  showXAxis?: boolean
-  showYAxis?: boolean
-  showLegend?: boolean
-  showGridLines?: boolean
-  showTooltip?: boolean
-  stack?: boolean
-  horizontal?: boolean
+  data: any[];
+  index: string;
+  categories: string[];
+  colors?: string[];
+  valueFormatter?: (value: number) => string;
+  yAxisWidth?: number;
+  showXAxis?: boolean;
+  showYAxis?: boolean;
+  showLegend?: boolean;
+  showGridLines?: boolean;
+  showTooltip?: boolean;
+  stack?: boolean;
+  horizontal?: boolean;
 }
 
 function BarChart({
@@ -224,7 +269,10 @@ function BarChart({
   className,
   ...props
 }: BarChartProps) {
-  const mappedColors = colors.map((color) => chartConfig.colors[color as keyof typeof chartConfig.colors] || color)
+  const mappedColors = colors.map(
+    (color) =>
+      chartConfig.colors[color as keyof typeof chartConfig.colors] || color,
+  );
 
   return (
     <div className={cn("w-full h-80", className)} {...props}>
@@ -239,7 +287,9 @@ function BarChart({
             bottom: 0,
           }}
         >
-          {showGridLines && <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />}
+          {showGridLines && (
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+          )}
           {showXAxis &&
             (horizontal ? (
               <YAxis
@@ -292,9 +342,14 @@ function BarChart({
                     <div className="rounded-lg border bg-background p-2 shadow-sm">
                       <div className="grid grid-cols-2 gap-2">
                         <div className="flex flex-col">
-                          <span className="text-xs text-muted-foreground">{label}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {label}
+                          </span>
                           {payload.map((entry, index) => (
-                            <span key={`item-${index}`} className="text-sm font-medium">
+                            <span
+                              key={`item-${index}`}
+                              className="text-sm font-medium"
+                            >
                               {valueFormatter(entry.value as number)}
                             </span>
                           ))}
@@ -306,16 +361,19 @@ function BarChart({
                               className="flex items-center text-xs"
                               style={{ color: entry.color }}
                             >
-                              <span className="mr-1 size-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                              <span
+                                className="mr-1 size-2 rounded-full"
+                                style={{ backgroundColor: entry.color }}
+                              />
                               {entry.name}
                             </span>
                           ))}
                         </div>
                       </div>
                     </div>
-                  )
+                  );
                 }
-                return null
+                return null;
               }}
             />
           )}
@@ -326,15 +384,23 @@ function BarChart({
                   return (
                     <div className="flex flex-wrap items-center justify-end gap-4">
                       {payload.map((entry, index) => (
-                        <div key={`item-${index}`} className="flex items-center gap-1">
-                          <div className="size-3 rounded-full" style={{ backgroundColor: entry.color }} />
-                          <span className="text-xs text-muted-foreground">{entry.value}</span>
+                        <div
+                          key={`item-${index}`}
+                          className="flex items-center gap-1"
+                        >
+                          <div
+                            className="size-3 rounded-full"
+                            style={{ backgroundColor: entry.color }}
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {entry.value}
+                          </span>
                         </div>
                       ))}
                     </div>
-                  )
+                  );
                 }
-                return null
+                return null;
               }}
             />
           )}
@@ -351,25 +417,34 @@ function BarChart({
         </RechartsBarChart>
       </ResponsiveContainer>
     </div>
-  )
+  );
 }
 
 interface DonutChartProps extends React.HTMLAttributes<HTMLDivElement> {
-  data: any[]
-  index: string
-  category: string
-  colors?: string[]
-  valueFormatter?: (value: number) => string
-  showLabel?: boolean
-  showLegend?: boolean
-  showTooltip?: boolean
+  data: any[];
+  index: string;
+  category: string;
+  colors?: string[];
+  valueFormatter?: (value: number) => string;
+  showLabel?: boolean;
+  showLegend?: boolean;
+  showTooltip?: boolean;
 }
 
 function DonutChart({
   data,
   index,
   category,
-  colors = ["primary", "secondary", "yellow", "green", "blue", "orange", "purple", "gray"],
+  colors = [
+    "primary",
+    "secondary",
+    "yellow",
+    "green",
+    "blue",
+    "orange",
+    "purple",
+    "gray",
+  ],
   valueFormatter = (value: number) => value.toString(),
   showLabel = true,
   showLegend = true,
@@ -377,7 +452,10 @@ function DonutChart({
   className,
   ...props
 }: DonutChartProps) {
-  const mappedColors = colors.map((color) => chartConfig.colors[color as keyof typeof chartConfig.colors] || color)
+  const mappedColors = colors.map(
+    (color) =>
+      chartConfig.colors[color as keyof typeof chartConfig.colors] || color,
+  );
 
   return (
     <div className={cn("w-full h-80", className)} {...props}>
@@ -387,17 +465,21 @@ function DonutChart({
             <Tooltip
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
-                  const data = payload[0].payload
+                  const data = payload[0].payload;
                   return (
                     <div className="rounded-lg border bg-background p-2 shadow-sm">
                       <div className="flex flex-col">
-                        <span className="text-xs text-muted-foreground">{data[index]}</span>
-                        <span className="text-sm font-medium">{valueFormatter(data[category])}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {data[index]}
+                        </span>
+                        <span className="text-sm font-medium">
+                          {valueFormatter(data[category])}
+                        </span>
                       </div>
                     </div>
-                  )
+                  );
                 }
-                return null
+                return null;
               }}
             />
           )}
@@ -408,15 +490,23 @@ function DonutChart({
                   return (
                     <div className="flex flex-wrap items-center justify-center gap-4">
                       {payload.map((entry, index) => (
-                        <div key={`item-${index}`} className="flex items-center gap-1">
-                          <div className="size-3 rounded-full" style={{ backgroundColor: entry.color }} />
-                          <span className="text-xs text-muted-foreground">{entry.value}</span>
+                        <div
+                          key={`item-${index}`}
+                          className="flex items-center gap-1"
+                        >
+                          <div
+                            className="size-3 rounded-full"
+                            style={{ backgroundColor: entry.color }}
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {entry.value}
+                          </span>
                         </div>
                       ))}
                     </div>
-                  )
+                  );
                 }
-                return null
+                return null;
               }}
             />
           )}
@@ -433,13 +523,16 @@ function DonutChart({
             labelLine={showLabel}
           >
             {data.map((_, index) => (
-              <Cell key={`cell-${index}`} fill={mappedColors[index % mappedColors.length]} />
+              <Cell
+                key={`cell-${index}`}
+                fill={mappedColors[index % mappedColors.length]}
+              />
             ))}
           </Pie>
         </RechartsPieChart>
       </ResponsiveContainer>
     </div>
-  )
+  );
 }
 
-export { AreaChart, BarChart, DonutChart }
+export { AreaChart, BarChart, DonutChart };

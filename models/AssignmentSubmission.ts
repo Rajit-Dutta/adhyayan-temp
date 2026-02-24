@@ -12,6 +12,7 @@ const assignmentSubmissionSchema = new Schema({
   marksScored: { type: Number, default: 0 },
   studentComment: { type: String },
   teacherFeedback: { type: String },
+  submissionDate: { type: Date, default: Date.now },
   status: {
     type: String,
     enum: ["submitted", "graded", "pending"],

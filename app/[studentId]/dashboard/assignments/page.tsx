@@ -420,7 +420,7 @@ export default function AssignmentsPage() {
                     !submittedAssignments.some(
                       (sub) =>
                         sub.assignment === assignment._id &&
-                        sub.status === "submitted",
+                        (sub.status === "submitted" || sub.status === "graded"),
                     ),
                 ).length
               }
@@ -483,7 +483,7 @@ export default function AssignmentsPage() {
                     !submittedAssignments.some(
                       (sub) =>
                         sub.assignment === assignment._id &&
-                        sub.status === "submitted",
+                        (sub.status === "submitted" || sub.status === "graded"),
                     ),
                 )
                 .map((a: Assignment) => (
@@ -927,9 +927,7 @@ export default function AssignmentsPage() {
                           <p className="text-xs font-bold mb-2">
                             Student's comment:
                           </p>
-                          <p className="text-sm">
-                            {assignment.studentComment}
-                          </p>
+                          <p className="text-sm">{assignment.studentComment}</p>
                         </div>
                       )}
 
