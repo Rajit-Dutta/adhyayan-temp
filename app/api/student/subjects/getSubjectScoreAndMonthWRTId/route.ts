@@ -12,44 +12,56 @@ export async function GET(req: NextRequest) {
     const studentId = searchParams.get("id");
     const subject = searchParams.get("subjectName");
 
+    if (!studentId || !subject) {
+      return new Response("Missing parameters", { status: 400 });
+    }
+
     const batchDetails = await batchModel.find({
       students: studentId,
-      subject: subject,
+      subject,
     });
 
-    if (batchDetails.length === 0) {
-      return new Response(JSON.stringify(0), { status: 200 });
+    if (!batchDetails.length) {
+      return new Response(JSON.stringify([]), { status: 200 });
     }
 
     const batchIds = batchDetails.map((b) => b._id);
 
-    const assignmentDetails = await assignmentModel.find({
-      assignedTo: { $in: batchIds },
-    });
+    const assignments = await assignmentModel.find(
+      { assignedTo: { $in: batchIds }, subject },
+      { _id: 1 },
+    );
 
-    if (assignmentDetails.length === 0) {
-      return new Response(JSON.stringify(0), { status: 200 });
+    const numberOfAssignments = assignments.length;
+
+    if (!assignments.length) {
+      return new Response(JSON.stringify([]), { status: 200 });
     }
 
-    const assignmentIds = assignmentDetails.map((a) => a._id);
+    const assignmentIds = assignments.map((a) => a._id);
 
-    const marksScoredDetails = await assignmentSubmissionModel
-      .find({
-        assignment: { $in: assignmentIds },
-        submittedBy: studentId,
-      })
+    const submissions = await assignmentSubmissionModel
+      .find(
+        {
+          assignment: { $in: assignmentIds },
+          submittedBy: studentId,
+        },
+        { marksScored: 1, submissionDate: 1 },
+      )
       .sort({ submissionDate: 1 });
 
-    if (marksScoredDetails.length === 0) {
-      return new Response(JSON.stringify(0), { status: 200 });
-    }
-    const marks = marksScoredDetails.map((a) => ({
-      submissionDate: a.submissionDate,
-      marksScored: a.marksScored,
-    }));
-    return new Response(JSON.stringify(marks), { status: 200 });
+    const result = {
+      stats: {
+        numberOfAssignments,
+        numberOfSubmissions: submissions.length,
+        subject
+      },
+      marks: submissions,
+    };
+
+    return new Response(JSON.stringify(result), { status: 200 });
   } catch (error) {
-    console.error("Error in getting batch details:", error);
+    console.error(error);
     return new Response("Internal Server Error", { status: 500 });
   }
 }
