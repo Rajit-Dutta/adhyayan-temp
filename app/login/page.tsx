@@ -140,6 +140,7 @@ export default function LoginPage() {
                   >
                     <div className="w-full">
                       <input
+                        suppressHydrationWarning={true}
                         id="password"
                         type={showPassword ? "text" : "password"}
                         placeholder="Enter your password"
@@ -159,6 +160,7 @@ export default function LoginPage() {
                         }`}
                       />
                       <button
+                        suppressHydrationWarning={true}
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"

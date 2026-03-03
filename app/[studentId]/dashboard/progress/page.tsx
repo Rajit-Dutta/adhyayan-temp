@@ -133,30 +133,30 @@ const subjectDetails = [
   },
 ];
 
-const testScores = [
-  {
-    test: "Unit Test 1",
-    Mathematics: 72,
-    Physics: 68,
-    English: 65,
-    History: 70,
-  },
-  { test: "Mid Term", Mathematics: 78, Physics: 76, English: 72, History: 78 },
-  {
-    test: "Unit Test 2",
-    Mathematics: 82,
-    Physics: 80,
-    English: 78,
-    History: 82,
-  },
-  {
-    test: "Unit Test 3",
-    Mathematics: 88,
-    Physics: 84,
-    English: 82,
-    History: 86,
-  },
-];
+// const testScores = [
+//   {
+//     test: "Unit Test 1",
+//     Mathematics: 72,
+//     Physics: 68,
+//     English: 65,
+//     History: 70,
+//   },
+//   { test: "Mid Term", Mathematics: 78, Physics: 76, English: 72, History: 78 },
+//   {
+//     test: "Unit Test 2",
+//     Mathematics: 82,
+//     Physics: 80,
+//     English: 78,
+//     History: 82,
+//   },
+//   {
+//     test: "Unit Test 3",
+//     Mathematics: 88,
+//     Physics: 84,
+//     English: 82,
+//     History: 86,
+//   },
+// ];
 
 export default function ProgressPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -241,16 +241,6 @@ export default function ProgressPage() {
       console.error("Failed loading dashboard", err);
     }
   };
-
-  const overallScore =
-    subjects.length === 0
-      ? 0
-      : Math.round(
-          subjectDetails.reduce((a, b) => a + b.score, 0) / subjects.length,
-        );
-  const overallChange = Math.round(
-    subjectDetails.reduce((a, b) => a + b.change, 0) / subjects.length,
-  );
 
   const buildMonthlyData = (map: Map<string, { stats: any; marks: any[] }>) => {
     const monthly: any = {};
@@ -344,7 +334,7 @@ export default function ProgressPage() {
       </div>
 
       {/* Summary Cards */}
-      <LoadingWrapper
+      {/* <LoadingWrapper
         isLoading={isLoading}
         skeleton={<DashboardStatsSkeleton />}
       >
@@ -413,7 +403,7 @@ export default function ProgressPage() {
             </CardContent>
           </Card>
         </div>
-      </LoadingWrapper>
+      </LoadingWrapper> */}
 
       <LoadingWrapper
         isLoading={isLoading}
@@ -432,9 +422,9 @@ export default function ProgressPage() {
             <TabsTrigger value="subjects" className="font-bold">
               Subjects
             </TabsTrigger>
-            <TabsTrigger value="tests" className="font-bold">
+            {/* <TabsTrigger value="tests" className="font-bold">
               Test Scores
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
 
           {/* Overview Tab */}
@@ -486,50 +476,13 @@ export default function ProgressPage() {
                 </CardContent>
               </Card>
             </div>
-
-            {/* Subject Quick View */}
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {Array.from(subjectScores.entries()).map(([subject, records]) => {
-                if (!Array.isArray(records.marks) || records.marks.length === 0)
-                  return null;
-
-                return records.marks.map((s: any, i: number) => (
-                  <Card key={subject + i} className="neo-brutalism-card">
-                    <CardContent className="p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-black">{subject}</h3>
-                      </div>
-
-                      <div className="flex items-end gap-1">
-                        <span className="text-2xl font-black">
-                          {calculateOverAllPercentage(subject)}%
-                        </span>
-                        <span className="mb-1 text-xs text-muted-foreground">
-                          Score
-                        </span>
-                      </div>
-
-                      <Progress
-                        value={s?.marksScored ?? 0}
-                        className="neo-brutalism-progress"
-                      />
-
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>
-                          Assignments: {records.stats.numberOfSubmissions}/
-                          {records.stats.numberOfAssignments}
-                        </span>
-                        <span></span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ));
-              })}
-            </div>
           </TabsContent>
 
           {/* Subjects Tab */}
-          <TabsContent value="subjects" className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
+          <TabsContent
+            value="subjects"
+            className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+          >
             {Array.from(subjectScores.entries()).map(([subject, records]) => {
               if (!Array.isArray(records.marks) || records.marks.length === 0)
                 return null;
@@ -537,11 +490,11 @@ export default function ProgressPage() {
               return records.marks.map((s: any) => (
                 <Card key={s._id} className="neo-brutalism-card">
                   <CardContent className="p-4">
-                    <div className="flex flex-col gap-4 lg:flex-row">
+                    <div className="flex flex-col gap-3 lg:flex-col justify-center items-start">
                       {/* Left: Score & Info */}
-                      <div className="flex items-start gap-4 lg:w-1/3">
+                      <div className="flex items-start lg:w-1/3">
                         <div className="space-y-1">
-                          <h3 className="font-black">{subject}</h3>
+                          <h3 className="font-black text-lg">{subject}</h3>
                           <p className="text-xs text-muted-foreground">
                             {/* {s.teacher} */}
                           </p>
@@ -584,7 +537,9 @@ export default function ProgressPage() {
                           </div>
                           <div className="rounded-md border-2 border-foreground p-2">
                             <p className="text-lg font-black text-red-600">
-                              {calculateMinimumPercentage(subject)}%
+                              {calculateMinimumPercentage(subject) > 0
+                                ? calculateMinimumPercentage(subject) + "%"
+                                : "NA"}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               Lowest
@@ -659,7 +614,7 @@ export default function ProgressPage() {
           </TabsContent>
 
           {/* Tests Tab */}
-          <TabsContent value="tests" className="space-y-4 pt-4">
+          {/* <TabsContent value="tests" className="space-y-4 pt-4">
             <Card className="neo-brutalism-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-black">
@@ -685,8 +640,6 @@ export default function ProgressPage() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Test History Table */}
             <Card className="neo-brutalism-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-black">
@@ -735,7 +688,7 @@ export default function ProgressPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
         </Tabs>
       </LoadingWrapper>
     </div>

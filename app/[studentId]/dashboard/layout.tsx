@@ -29,6 +29,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { useAtom } from "jotai";
 import { loadableStudentCookieData } from "@/lib/store/student";
 import Loader from "@/components/ui/loading";
+import axios from "axios";
 
 export default function DashboardLayout({
   children,
@@ -63,8 +64,12 @@ export default function DashboardLayout({
     },
   ];
 
+  const signOut = async () => {
+    await axios.delete(`${process.env.NEXT_PUBLIC_DOMAIN}/signOut`);
+  };
+
   if (studentData.state === "loading") {
-    return <Loader/>;
+    return <Loader />;
   } else if (studentData.state === "hasError") {
     return <div>Error loading student</div>;
   } else if (studentData.state === "hasData") {
@@ -79,8 +84,12 @@ export default function DashboardLayout({
                     <User className="h-6 w-6 text-primary-foreground" />
                   </div>
                   <div>
-                    <p className="font-bold">{studentData.data.jwtDecoded.name}</p>
-                    <p className="text-xs">{studentData.data.jwtDecoded.email}</p>
+                    <p className="font-bold">
+                      {studentData.data.jwtDecoded.name}
+                    </p>
+                    <p className="text-xs">
+                      {studentData.data.jwtDecoded.email}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -93,7 +102,9 @@ export default function DashboardLayout({
                       tooltip={item.label}
                       className={`neo-brutalism-button my-1 ${pathname === item.href ? "neo-brutalism-active" : ""}`}
                     >
-                      <Link href={`/${studentData.data.jwtDecoded.id}` + item.href}>
+                      <Link
+                        href={`/${studentData.data.jwtDecoded.id}` + item.href}
+                      >
                         <item.icon className="h-5 w-5" />
                         <span className="font-bold">{item.label}</span>
                       </Link>
@@ -122,10 +133,13 @@ export default function DashboardLayout({
                     asChild
                     className="neo-brutalism-button my-1"
                   >
-                    <Link href="/">
+                    <button
+                      className="flex items-center gap-2 font-bold"
+                      onClick={() => signOut()}
+                    >
                       <LogOut className="h-5 w-5" />
-                      <span className="font-bold">Logout</span>
-                    </Link>
+                      Logout
+                    </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>

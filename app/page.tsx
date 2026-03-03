@@ -1,15 +1,42 @@
-import Link from "next/link"
-import { ArrowRight, BookOpen, CheckCircle, GraduationCap, Users } from "lucide-react"
+export const dynamic = "force-dynamic";
 
-import { Button } from "@/components/ui/button"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { LazyComponent } from "@/components/lazy-component"
-import { LazyCarousel } from "@/components/lazy-carousel"
-import { ProgressiveImage } from "@/components/progressive-image"
-import { FeaturedCourses } from "@/components/featured-courses"
-import { HomeTestimonials } from "@/components/home-testimonials"
+import Link from "next/link";
+import {
+  ArrowRight,
+  BookOpen,
+  CheckCircle,
+  GraduationCap,
+  Users,
+} from "lucide-react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import jwt from "jsonwebtoken";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { LazyComponent } from "@/components/lazy-component";
+import { LazyCarousel } from "@/components/lazy-carousel";
+import { ProgressiveImage } from "@/components/progressive-image";
+import { FeaturedCourses } from "@/components/featured-courses";
+import { HomeTestimonials } from "@/components/home-testimonials";
+import studentModel from "@/models/Student";
 
-export default function Home() {
+export default async function Home() {
+  const cookieStore = await cookies();
+  const rememberToken = cookieStore.get("rememberMeToken")?.value;
+
+  if (rememberToken) {
+    const user = await studentModel
+      .findOne({
+        rememberMeToken: rememberToken,
+        rememberMeExpiry: { $gt: new Date() },
+      })
+      .lean();
+
+    if (user && typeof user === "object" && !Array.isArray(user)) {
+      redirect(`/${user._id}/dashboard`);
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
@@ -20,19 +47,34 @@ export default function Home() {
             <span className="text-lg md:text-xl font-black">ADHYAYAN</span>
           </div>
           <nav className="hidden lg:flex items-center gap-6">
-            <Link href="#" className="text-sm font-bold hover:underline underline-offset-4 transition-colors">
+            <Link
+              href="#"
+              className="text-sm font-bold hover:underline underline-offset-4 transition-colors"
+            >
               Home
             </Link>
-            <Link href="#" className="text-sm font-bold hover:underline underline-offset-4 transition-colors">
+            <Link
+              href="#"
+              className="text-sm font-bold hover:underline underline-offset-4 transition-colors"
+            >
               About
             </Link>
-            <Link href="#" className="text-sm font-bold hover:underline underline-offset-4 transition-colors">
+            <Link
+              href="#"
+              className="text-sm font-bold hover:underline underline-offset-4 transition-colors"
+            >
               Courses
             </Link>
-            <Link href="#" className="text-sm font-bold hover:underline underline-offset-4 transition-colors">
+            <Link
+              href="#"
+              className="text-sm font-bold hover:underline underline-offset-4 transition-colors"
+            >
               Testimonials
             </Link>
-            <Link href="#" className="text-sm font-bold hover:underline underline-offset-4 transition-colors">
+            <Link
+              href="#"
+              className="text-sm font-bold hover:underline underline-offset-4 transition-colors"
+            >
               Contact
             </Link>
           </nav>
@@ -48,7 +90,10 @@ export default function Home() {
               </Button>
             </Link>
             <Link href="/signup">
-              <Button size="sm" className="neo-brutalism-button-sm text-xs md:text-sm">
+              <Button
+                size="sm"
+                className="neo-brutalism-button-sm text-xs md:text-sm"
+              >
                 Sign up
               </Button>
             </Link>
@@ -63,10 +108,13 @@ export default function Home() {
             <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px] items-center">
               <div className="flex flex-col justify-center space-y-4 md:space-y-6 text-center lg:text-left">
                 <div className="space-y-2 md:space-y-4">
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black tracking-tighter">ADHYAYAN</h1>
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black tracking-tighter">
+                    ADHYAYAN
+                  </h1>
                   <p className="max-w-[600px] text-sm md:text-base lg:text-lg text-muted-foreground leading-relaxed mx-auto lg:mx-0">
-                    Empowering students through innovative learning experiences. Our platform combines traditional
-                    teaching methods with modern technology to create an engaging educational journey.
+                    Empowering students through innovative learning experiences.
+                    Our platform combines traditional teaching methods with
+                    modern technology to create an engaging educational journey.
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
@@ -77,7 +125,10 @@ export default function Home() {
                     </Button>
                   </Link>
                   <Link href="#about">
-                    <Button variant="outline" className="w-full sm:w-auto neo-brutalism-button-outline">
+                    <Button
+                      variant="outline"
+                      className="w-full sm:w-auto neo-brutalism-button-outline"
+                    >
                       Learn More
                     </Button>
                   </Link>
@@ -118,25 +169,38 @@ export default function Home() {
                     Our Impact
                   </h2>
                   <p className="text-sm md:text-base lg:text-lg text-muted-foreground leading-relaxed">
-                    We've helped thousands of students achieve their academic goals
+                    We've helped thousands of students achieve their academic
+                    goals
                   </p>
                 </div>
               </div>
               <div className="mx-auto grid max-w-5xl grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 py-6 md:py-8 lg:py-12">
                 <div className="flex flex-col items-center justify-center space-y-2 border-2 border-foreground rounded-lg p-6 md:p-8 bg-background neo-brutalism-card">
                   <Users className="h-8 w-8 md:h-10 md:w-10 text-primary mb-2" />
-                  <h3 className="text-xl md:text-2xl lg:text-3xl font-black">5,000+</h3>
-                  <p className="text-sm md:text-base text-muted-foreground text-center">Active Students</p>
+                  <h3 className="text-xl md:text-2xl lg:text-3xl font-black">
+                    5,000+
+                  </h3>
+                  <p className="text-sm md:text-base text-muted-foreground text-center">
+                    Active Students
+                  </p>
                 </div>
                 <div className="flex flex-col items-center justify-center space-y-2 border-2 border-foreground rounded-lg p-6 md:p-8 bg-background neo-brutalism-card">
                   <BookOpen className="h-8 w-8 md:h-10 md:w-10 text-primary mb-2" />
-                  <h3 className="text-xl md:text-2xl lg:text-3xl font-black">200+</h3>
-                  <p className="text-sm md:text-base text-muted-foreground text-center">Courses Offered</p>
+                  <h3 className="text-xl md:text-2xl lg:text-3xl font-black">
+                    200+
+                  </h3>
+                  <p className="text-sm md:text-base text-muted-foreground text-center">
+                    Courses Offered
+                  </p>
                 </div>
                 <div className="flex flex-col items-center justify-center space-y-2 border-2 border-foreground rounded-lg p-6 md:p-8 bg-background neo-brutalism-card sm:col-span-2 lg:col-span-1">
                   <CheckCircle className="h-8 w-8 md:h-10 md:w-10 text-primary mb-2" />
-                  <h3 className="text-xl md:text-2xl lg:text-3xl font-black">95%</h3>
-                  <p className="text-sm md:text-base text-muted-foreground text-center">Success Rate</p>
+                  <h3 className="text-xl md:text-2xl lg:text-3xl font-black">
+                    95%
+                  </h3>
+                  <p className="text-sm md:text-base text-muted-foreground text-center">
+                    Success Rate
+                  </p>
                 </div>
               </div>
             </div>
@@ -155,7 +219,10 @@ export default function Home() {
           className="w-full py-8 md:py-16 lg:py-20 bg-muted"
           minHeight="500px"
         >
-          <section id="about" className="w-full py-8 md:py-16 lg:py-20 bg-muted">
+          <section
+            id="about"
+            className="w-full py-8 md:py-16 lg:py-20 bg-muted"
+          >
             <div className="container px-4 md:px-6 lg:px-8">
               <div className="grid gap-6 md:gap-8 lg:grid-cols-2 lg:gap-12 items-center">
                 <div className="flex justify-center order-last lg:order-first">
@@ -170,21 +237,31 @@ export default function Home() {
                 </div>
                 <div className="flex flex-col justify-center space-y-4 md:space-y-6 text-center lg:text-left">
                   <div className="space-y-2 md:space-y-4">
-                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-black tracking-tighter">About Us</h2>
+                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-black tracking-tighter">
+                      About Us
+                    </h2>
                     <p className="text-sm md:text-base lg:text-lg text-muted-foreground leading-relaxed">
-                      Founded in 2020, ADHYAYAN was born out of a passion for transforming education. Our mission is to
-                      make quality education accessible to all students, regardless of their background or location.
+                      Founded in 2020, ADHYAYAN was born out of a passion for
+                      transforming education. Our mission is to make quality
+                      education accessible to all students, regardless of their
+                      background or location.
                     </p>
                     <p className="text-sm md:text-base lg:text-lg text-muted-foreground leading-relaxed">
-                      Our team of experienced educators and technology experts work together to create an innovative
-                      learning platform that combines traditional teaching methods with modern technology.
+                      Our team of experienced educators and technology experts
+                      work together to create an innovative learning platform
+                      that combines traditional teaching methods with modern
+                      technology.
                     </p>
                   </div>
                   <div className="space-y-2 md:space-y-4">
-                    <h3 className="text-lg md:text-xl font-black">Meet Our CEO</h3>
+                    <h3 className="text-lg md:text-xl font-black">
+                      Meet Our CEO
+                    </h3>
                     <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                      With over 15 years of experience in education, our CEO has dedicated their career to improving how
-                      students learn and grow. Their vision drives our commitment to educational excellence.
+                      With over 15 years of experience in education, our CEO has
+                      dedicated their career to improving how students learn and
+                      grow. Their vision drives our commitment to educational
+                      excellence.
                     </p>
                   </div>
                 </div>
@@ -194,7 +271,12 @@ export default function Home() {
         </LazyComponent>
 
         {/* CTA Section - Lazy Loaded */}
-        <LazyComponent threshold={0.3} rootMargin="50px" className="w-full py-8 md:py-16 lg:py-20" minHeight="300px">
+        <LazyComponent
+          threshold={0.3}
+          rootMargin="50px"
+          className="w-full py-8 md:py-16 lg:py-20"
+          minHeight="300px"
+        >
           <section className="w-full py-8 md:py-16 lg:py-20">
             <div className="container px-4 md:px-6 lg:px-8">
               <div className="flex flex-col items-center justify-center space-y-4 md:space-y-6 text-center">
@@ -203,17 +285,25 @@ export default function Home() {
                     Ready to Start Learning?
                   </h2>
                   <p className="text-sm md:text-base lg:text-lg text-muted-foreground leading-relaxed">
-                    Join thousands of students who are already benefiting from our platform
+                    Join thousands of students who are already benefiting from
+                    our platform
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 pt-2 md:pt-4">
                   <Link href="/signup">
-                    <Button size="lg" className="w-full sm:w-auto neo-brutalism-button">
+                    <Button
+                      size="lg"
+                      className="w-full sm:w-auto neo-brutalism-button"
+                    >
                       Sign Up Now
                     </Button>
                   </Link>
                   <Link href="/login">
-                    <Button variant="outline" size="lg" className="w-full sm:w-auto neo-brutalism-button-outline">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full sm:w-auto neo-brutalism-button-outline"
+                    >
                       Log In
                     </Button>
                   </Link>
@@ -241,22 +331,34 @@ export default function Home() {
               <h3 className="text-sm font-black">Quick Links</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Home
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     About
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Courses
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Contact
                   </Link>
                 </li>
@@ -266,17 +368,26 @@ export default function Home() {
               <h3 className="text-sm font-black">Legal</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Terms of Service
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Cookie Policy
                   </Link>
                 </li>
@@ -285,7 +396,10 @@ export default function Home() {
             <div className="space-y-3 md:space-y-4">
               <h3 className="text-sm font-black">Connect</h3>
               <div className="flex gap-4">
-                <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -302,7 +416,10 @@ export default function Home() {
                   </svg>
                   <span className="sr-only">Facebook</span>
                 </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -321,7 +438,10 @@ export default function Home() {
                   </svg>
                   <span className="sr-only">Instagram</span>
                 </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -338,7 +458,10 @@ export default function Home() {
                   </svg>
                   <span className="sr-only">Twitter</span>
                 </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -366,5 +489,5 @@ export default function Home() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

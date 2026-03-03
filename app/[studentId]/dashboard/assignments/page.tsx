@@ -478,13 +478,8 @@ export default function AssignmentsPage() {
               {pendingAssignments
                 .filter(
                   (assignment: any) =>
-                    (filterSubject === "All" ||
-                      assignment.subject === filterSubject) &&
-                    !submittedAssignments.some(
-                      (sub) =>
-                        sub.assignment === assignment._id &&
-                        (sub.status === "submitted" || sub.status === "graded"),
-                    ),
+                    filterSubject === "All" ||
+                    assignment.subject === filterSubject,
                 )
                 .map((a: Assignment) => (
                   <Card key={a._id} className="neo-brutalism-card">

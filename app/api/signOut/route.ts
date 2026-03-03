@@ -1,9 +1,8 @@
 import { dbConnect } from "@/lib/db";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-dbConnect();
-
-export async function POST(request: NextRequest) {
+export async function POST() {
+  await dbConnect();
   try {
     const response = NextResponse.json({
       message: "Sign out successful",
@@ -18,7 +17,7 @@ export async function POST(request: NextRequest) {
     console.error("Error in signOut route:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
